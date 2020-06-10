@@ -1,0 +1,24 @@
+//check for all error message needs
+if(!game.modules.get("about-time").active) return ui.notifications.error(`About Time isn't Loaded`);
+//instantiate variables (macro, quarterstaff)
+const macro = game.macros.entities.find(m=>m.name==="Call");
+const quarterstaff = game.user.character.data.items.find(i=>i.name==="Quarterstaff");
+const copy_quarterstaff = duplicate(quarterstaff);
+//cast spell
+game.dnd5e.rollItemMacro("Shillelagh").then(()=> {
+	//call macro, set condition + time
+	macro.execute(game.user.character.name,"Shillelagh",1,"");
+	//get old information
+	let qOld_ability = quarterstaff.data.ability;
+	let qOld_damage = quarterstaff.data.damage.parts[0][0];
+	//update weapon
+	copy_quarterstaff.data.ability= "wis";
+	copy_quarterstaff.data.damage.parts[0][0] = "1d8+@mod";
+	game.user.character.updateEmbeddedEntity("OwnedItem",copy_quarterstaff);
+	//revert weapon
+	game.Gametime.doIn({minutes:1},() => {
+		copy_quarterstaff.data.ability = qOld_ability;
+		copy_quarterstaff.data.damage.parts[0][0] = qOld_damage;
+		game.user.character.updateEmbeddedEntity("OwnedItem",copy_quarterstaff);
+	});
+});
