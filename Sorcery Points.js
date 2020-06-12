@@ -1,8 +1,8 @@
 /*sorcerer point macro
  *Module Requirements : Furnace
  *Character Requirements : 	Must be a user with levels in "Sorcerer".
- *							Must have a feature with uses equal to sorcerer level named "Sorcery Points"
- *							Metamagic Feats must be named as they are in the Macro.
+ *				Must have a feature with uses equal to sorcerer level named "Sorcery Points"
+ *				Metamagic Feats must be named as they are in the Macro.
  */
 let outlog =(...args) => console.log("Sorcerer | ", ...args);
 let debug = false;
@@ -15,7 +15,6 @@ let s_class = s_actor.data.items.find(i=>i.name==="Sorcerer");
 let s_points = s_actor.data.items.find(i=>i.name==="Sorcery Points");
 let s_slots = s_actor.data.data.spells;
 let confirmed = false;
-let fail = true;
 
 //dialog
 Sorcerer_Dialog();
