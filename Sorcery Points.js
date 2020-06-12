@@ -1,8 +1,8 @@
 /*sorcerer point macro
  *Module Requirements : Furnace
  *Character Requirements : 	Must be a user with levels in "Sorcerer".
- *							Must have a feature with uses equal to sorcerer level named "Sorcery Points"
- *							Metamagic Feats must be named as they are in the Macro.
+ *				Must have a feature with uses equal to sorcerer level named "Sorcery Points"
+ *				Metamagic Feats must be named as they are in the Macro.
  */
 let outlog =(...args) => console.log("Sorcerer | ", ...args);
 let debug = false;
@@ -31,11 +31,25 @@ function Sorcerer_Dialog()
 			<select id="use" name="use">`;
 	if(checkSlots("available") && s_points.data.uses.value !== s_points.data.uses.max) {content += `<option value = "sorcPoint">Spell Slot => Sorcery Point</option>`;}
 	if(checkSlots("missing") && s_points.data.uses.value >= 2){content += `<option value = "spellSlot">Sorcery Point => Spell Slot</option>`;}
-
 	if(checkPoints() > 0 && checkSlots("available"))
 	{
-		content += `<option value = "extend">Extended Spell</option>`;
-		content += `<option value = "twin">Twinned Spell</option>`;
+
+		if(game.user.character.data.items.find(i=>i.name==="Metamagic: Careful Spell")!==undefined)
+                      {content += `<option value = "careful">Careful Spell Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Distant Spell")!==undefined)
+                      {content += `<option value = "distant">Distant Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Empowered Spell")!==undefined)
+                      {content += `<option value = "empower">Empowered Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Extended Spell")!==undefined)
+                      {content += `<option value = "extend">Extended Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Heightened Spell")!==undefined)
+                      {content += `<option value = "heighten">Heightened Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Quickened Spell")!==undefined)
+                      {content += `<option value = "quicken">Quickened Spell</option>`;}
+                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Subtle Spell")!==undefined)
+                      {content += `<option value = "subtle">Subtle Spell</option>`;}
+		if(game.user.character.data.items.find(i=>i.name==="Metamagic: Twinned Spell")!==undefined)
+                      {content += `<option value = "twin">Twinned Spell</option>`;}
 	}
 	content += `</select><br><br></div>`;
 
@@ -58,14 +72,32 @@ function Sorcerer_Dialog()
 		close : html => {
 			if(confirmed){
 				switch(html.find('[name=use]')[0].value){
-					case "sorcPoint" : 
+					case "sorcPoint" :
 						spell_SorceryPoints();
 						break;
 					case "spellSlot" :
 						sorceryPoints_spell();
 						break;
+					case "careful" :
+						metaMagic_Careful();
+						break;
+					case "distant" :
+						metaMagic_Distant();
+						break;
+					case "empower" :
+						metaMagic_Empowered();
+						break;
 					case "extend" :
 						metaMagic_Extended();
+						break;
+					case "heighten" :
+						metaMagic_Heightened();
+						break;
+					case "quicken" :
+						metaMagic_Quickened();
+						break;
+					case "subtle" :
+						metaMagic_Subtle();
 						break;
 					case "twin" :
 						metaMagic_Twinned();
@@ -87,7 +119,7 @@ function spell_SorceryPoints()
 	{
 		if(s_slots[slot].value !== 0 && s_slots[slot].value !== undefined)
 		{
-			newContent += `<option value = "${slot}">Spell Slot Level ${slot.charAt(5)} - ${s_slots[slot].value} </option>`;
+			newContent += `<option value = "${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
 		}
 	}
 	newContent += `</select></div>`;
@@ -141,8 +173,8 @@ function sorceryPoints_spell()
 		if(parseInt(slot.charAt(5)) <= Math.ceil(s_class.data.levels/2) && parseInt(slot.charAt(5)) < 6)
 		{
 			if(s_points.data.uses.value >= s_cost[parseInt(slot.charAt(5)-1)] && s_slots[slot].value !== s_slots[slot].max)
-			{ 
-				newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} - ${s_slots[slot].value}</option>`;
+			{
+				newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
 			}
 		}
 	}
@@ -173,14 +205,74 @@ function sorceryPoints_spell()
 				s_actor.update(actorUpdateData);
 				s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
 				display(`Succesfully Used : ${s_cost[parseInt(lvlchosen.charAt(5)-1)]} sorcery points. <br> Creating : Spell Slot Level ${lvlchosen.charAt(5)}`);
-			}			
+			}
 		}
 	}).render(true);
+}
+function metaMagic_Careful()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Careful Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Careful Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Careful Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 1;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
+}
+function metaMagic_Distant()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Distant Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Distant Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Distant Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 1;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
+}
+function metaMagic_Empowered()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Empowered Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Empowered Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Empowered Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 1;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
 }
 function metaMagic_Extended()
 {
 	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Extended Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Extended Spell.`);
 	game.dnd5e.rollItemMacro("Metamagic: Extended Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 1;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
+}
+function metaMagic_Heightened()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Heightened Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Heightened Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Heightened Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 3;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
+}
+function metaMagic_Quickened()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Quickened Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Quickened Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Quickened Spell").then(()=> {
+		let itemUpdateData = duplicate(s_points);
+		itemUpdateData.data.uses.value -= 2;
+		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
+	});
+
+}
+function metaMagic_Subtle()
+{
+	if(game.user.character.data.items.find(i=>i.name==="Metamagic: Subtle Spell")===undefined) return ui.notifications.warn(`Your character does not have a Metamagic: Subtle Spell.`);
+	game.dnd5e.rollItemMacro("Metamagic: Subtle Spell").then(()=> {
 		let itemUpdateData = duplicate(s_points);
 		itemUpdateData.data.uses.value -= 1;
 		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
