@@ -15,7 +15,6 @@ let s_class = s_actor.data.items.find(i=>i.name==="Sorcerer");
 let s_points = s_actor.data.items.find(i=>i.name==="Sorcery Points");
 let s_slots = s_actor.data.data.spells;
 let confirmed = false;
-let fail = true;
 
 //dialog
 Sorcerer_Dialog();
