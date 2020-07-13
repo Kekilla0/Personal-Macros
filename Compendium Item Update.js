@@ -179,7 +179,7 @@ async function update_ItemActors(item)
         {
             if(item.name === i.name)
             {
-                await i.update(items.data);
+                await i.update(item.data);
             }
         }
     }
@@ -197,7 +197,7 @@ async function update_ItemScenes(item)
                 {
                     if(i.name === item.name)
                     {
-                        await i.update(items.data);
+                        await i.update(item.data);
                     }
                 }
             }
