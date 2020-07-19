@@ -3,7 +3,8 @@
 ////////////////////////args[1] === right (# of squares)//////////
 ////////////////////////args[2] === down (# of squares)///////////
 
-let t = canvas.tokens.get(args[0]);
+let t = canvas.tokens.get(args[0]) ? canvas.tokens.get(args[0]) : canvas.notes.get(args[0]); 
+
 let g = canvas.scene.data.grid;
 
 let newX = (t.data.x + (g *parseInt(args[1])));
