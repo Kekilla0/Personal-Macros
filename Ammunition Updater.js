@@ -71,7 +71,7 @@
             <table>
               <tr>
                 <td>
-                  ${target.data.name} has changed his ammunition on ${update_weapon.name} to ${update_ammo.name}.
+                  ${target.data.name} has loaded ${update_weapon.name} with ${update_ammo.name}.
                 </td>
               </tr>
             </table>`);
