@@ -296,7 +296,7 @@ function metaMagic_Twinned()
 	newContent += `</select></div>`;
 	new Dialog({
 		title : "Twinned Spell",
-		content : content,
+		content : newContent,
 		buttons : {
 			one : {
 				icon :`<i class="fas fa-check"></i>`,
