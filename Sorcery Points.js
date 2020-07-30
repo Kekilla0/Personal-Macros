@@ -16,6 +16,8 @@ let s_points = s_actor.data.items.find(i=>i.name==="Sorcery Points");
 let s_slots = s_actor.data.data.spells;
 let confirmed = false;
 
+if(debug) outlog(s_points,s_slots);
+
 //dialog
 Sorcerer_Dialog();
 
@@ -32,24 +34,23 @@ function Sorcerer_Dialog()
 	if(checkSlots("missing") && s_points.data.uses.value >= 2){content += `<option value = "spellSlot">Sorcery Point => Spell Slot</option>`;}
 	if(checkPoints() > 0 && checkSlots("available"))
 	{
-
 		if(game.user.character.data.items.find(i=>i.name==="Metamagic: Careful Spell")!==undefined)
-                      {content += `<option value = "careful">Careful Spell Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Distant Spell")!==undefined)
-                      {content += `<option value = "distant">Distant Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Empowered Spell")!==undefined)
-                      {content += `<option value = "empower">Empowered Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Extended Spell")!==undefined)
-                      {content += `<option value = "extend">Extended Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Heightened Spell")!==undefined)
-                      {content += `<option value = "heighten">Heightened Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Quickened Spell")!==undefined)
-                      {content += `<option value = "quicken">Quickened Spell</option>`;}
-                if(game.user.character.data.items.find(i=>i.name==="Metamagic: Subtle Spell")!==undefined)
-                      {content += `<option value = "subtle">Subtle Spell</option>`;}
-		if(game.user.character.data.items.find(i=>i.name==="Metamagic: Twinned Spell")!==undefined)
-                      {content += `<option value = "twin">Twinned Spell</option>`;}
-	}
+          {content += `<option value = "careful">Careful Spell Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Distant Spell")!==undefined)
+          {content += `<option value = "distant">Distant Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Empowered Spell")!==undefined)
+          {content += `<option value = "empower">Empowered Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Extended Spell")!==undefined)
+          {content += `<option value = "extend">Extended Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Heightened Spell")!==undefined)
+          {content += `<option value = "heighten">Heightened Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Quickened Spell")!==undefined)
+          {content += `<option value = "quicken">Quickened Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Subtle Spell")!==undefined)
+          {content += `<option value = "subtle">Subtle Spell</option>`;}
+    if(game.user.character.data.items.find(i=>i.name==="Metamagic: Twinned Spell")!==undefined)
+          {content += `<option value = "twin">Twinned Spell</option>`;}
+  }
 	content += `</select><br><br></div>`;
 
 	new Dialog({
@@ -110,15 +111,22 @@ function spell_SorceryPoints()
 {
 	//variable creation
 	confirmed = false;
-	let newContent = `<div class = "form-group">
-						<br>
-						<label>Select Level  : </label>
-						<select id="lvl" name="lvl">`;
+  let newContent = 
+    `<div class = "form-group">
+		  <br>
+			<label>Select Level  : </label>
+			<select id="lvl" name="lvl">`;
 	for(let slot in s_slots)
 	{
+    if(debug) outlog(slot,s_slots[slot]);
 		if(s_slots[slot].value !== 0 && s_slots[slot].value !== undefined)
 		{
-			newContent += `<option value = "${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
+      if(slot !== "pact")
+      {
+        newContent += `<option value = "${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
+      }else{
+        newContent += `<option value = "${slot}">Pact Spell Slot Level ${s_slots[slot].level} (${s_slots[slot].value} currently)</option>`;
+      }
 		}
 	}
 	newContent += `</select></div>`;
@@ -147,13 +155,23 @@ function spell_SorceryPoints()
 				let actorUpdateData = duplicate(s_actor);
 				let itemUpdateData = duplicate(s_points);
 				//This is where you would want to check for validity of use, maybe even a dialog to stop if unnecessary.
-				actorUpdateData.data.spells[lvlchosen].value -= 1;
-				itemUpdateData.data.uses.value += Math.clamped(parseInt(lvlchosen.charAt(5)),0,itemUpdateData.data.uses.max);
+        actorUpdateData.data.spells[lvlchosen].value -= 1;
+        if(lvlchosen === "pact")
+        {
+          itemUpdateData.data.uses.value += Math.clamped(actorUpdateData.data.spells[lvlchosen].level,0,itemUpdateData.data.uses.max);
+        }else{
+          itemUpdateData.data.uses.value += Math.clamped(parseInt(lvlchosen.charAt(5)),0,itemUpdateData.data.uses.max);
+        }
 				//character and item update
 				s_actor.update(actorUpdateData);
 				s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
-				//Display Information
-				display(`Succesfully Used a : Level ${lvlchosen.charAt(5)} Spell Slot <br> Creating : ${lvlchosen.charAt(5)} sorcery points.`);
+        //Display Information
+        if(lvlchosen === "pact")
+        {
+          display(`Succesfully Used a : Pact Magic Slot - Level ${actorUpdateData.data.spells[lvlchosen].level}<br> Creating : ${actorUpdateData.data.spells[lvlchosen].level} sorcery points.`);
+        }else {
+          display(`Succesfully Used a : Level ${lvlchosen.charAt(5)} Spell Slot <br> Creating : ${lvlchosen.charAt(5)} sorcery points.`);
+        }
 			}
 		}
 	}).render(true);
@@ -169,11 +187,23 @@ function sorceryPoints_spell()
 						<select id="lvl" name="lvl">`;
 	for(let slot in s_slots)
 	{
-		if(parseInt(slot.charAt(5)) <= Math.ceil(s_class.data.levels/2) && parseInt(slot.charAt(5)) < 6)
+    let lvl = 0;
+    if(slot === "pact")
+    { 
+      lvl = s_slots[slot].level;
+    }else{
+      lvl = parseInt(slot.charAt(5));
+    }
+		if(lvl <= Math.ceil(s_class.data.levels/2) && lvl < 6)
 		{
-			if(s_points.data.uses.value >= s_cost[parseInt(slot.charAt(5)-1)] && s_slots[slot].value !== s_slots[slot].max)
+			if(s_points.data.uses.value >= s_cost[lvl-1] && s_slots[slot].value !== s_slots[slot].max)
 			{
-				newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
+        if(slot === "pact")
+        {
+          newContent += `<option value="${slot}">Pact Spell Slot Level ${s_slots[slot].level} (${s_slots[slot].value} currently)</option>`;
+        }else{
+          newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} (${s_slots[slot].value} currently)</option>`;
+        }
 			}
 		}
 	}
@@ -200,10 +230,16 @@ function sorceryPoints_spell()
 				let actorUpdateData = duplicate(s_actor);
 				let itemUpdateData = duplicate(s_points);
 				actorUpdateData.data.spells[lvlchosen].value += 1;
-				itemUpdateData.data.uses.value -= Math.clamped((s_cost[parseInt(lvlchosen.charAt(5)-1)]),0,itemUpdateData.data.uses.max);
-				s_actor.update(actorUpdateData);
+        if(lvlchosen === "pact")
+        {
+          itemUpdateData.data.uses.value -= Math.clamped(s_cost[actorUpdateData.data.spells[lvlchosen].level-1],0,itemUpdateData.data.uses.max);
+          display(`Succesfully Used : ${s_cost[actorUpdateData.data.spells[lvlchosen].level-1]} sorcery points. <br> Creating : Pact Magic Spell Slot Level ${actorUpdateData.data.spells[lvlchosen].level}`);
+        }else{
+          itemUpdateData.data.uses.value -= Math.clamped((s_cost[parseInt(lvlchosen.charAt(5)-1)]),0,itemUpdateData.data.uses.max);
+          display(`Succesfully Used : ${s_cost[parseInt(lvlchosen.charAt(5)-1)]} sorcery points. <br> Creating : Spell Slot Level ${lvlchosen.charAt(5)}`);
+        }
+        s_actor.update(actorUpdateData);
 				s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
-				display(`Succesfully Used : ${s_cost[parseInt(lvlchosen.charAt(5)-1)]} sorcery points. <br> Creating : Spell Slot Level ${lvlchosen.charAt(5)}`);
 			}
 		}
 	}).render(true);
@@ -226,7 +262,6 @@ function metaMagic_Distant()
 		itemUpdateData.data.uses.value -= 1;
 		s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
 	});
-
 }
 function metaMagic_Empowered()
 {
@@ -285,12 +320,25 @@ function metaMagic_Twinned()
 	let newContent = `<div class = "form-group">
 	<br>
 	<label>Select Level  : </label>
-	<select id="lvl" name="lvl">`;
+  <select id="lvl" name="lvl">
+    <option value="0">Cantrip</option>`;
 	for(let slot in s_slots)
 	{
-		if(parseInt(slot.charAt(5)) <= s_points.data.uses.value)
+    let lvl = 0;
+    if(slot === "pact")
+    { 
+      lvl = s_slots[slot].level;
+    }else{
+      lvl = parseInt(slot.charAt(5));
+    }
+		if(lvl <= s_points.data.uses.value)
 		{
-			newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} - ${s_slots[slot].value}</option>`;
+      if(slot === "pact")
+      {
+        newContent += `<option value="${slot}">Pact Spell Slot Level ${s_slots[slot].level} - ${s_slots[slot].value}</option>`;
+      }else {
+        newContent += `<option value="${slot}">Spell Slot Level ${slot.charAt(5)} - ${s_slots[slot].value}</option>`;
+      }
 		}
 	}
 	newContent += `</select></div>`;
@@ -315,8 +363,13 @@ function metaMagic_Twinned()
 			{
 				game.dnd5e.rollItemMacro("Metamagic: Twinned Spell").then(()=>{
 					let lvlchosen = html.find('[name=lvl]')[0].value;
-					let itemUpdateData = duplicate(s_points);
-					itemUpdateData.data.uses.value -= parseInt(lvlchosen.charAt(5));
+          let itemUpdateData = duplicate(s_points);
+          if(lvlchosen === "pact")
+          {
+            itemUpdateData.data.uses.value -= s_slots[lvlchosen].level;
+          }else{
+            itemUpdateData.data.uses.value -= parseInt(lvlchosen.charAt(5));
+          }
 					s_actor.updateEmbeddedEntity("OwnedItem", itemUpdateData);
 				});
 			}
