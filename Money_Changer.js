@@ -78,27 +78,129 @@ function changeValue(Original, Difference)
       switch(key)
       {
         case "cp" :
-          Update["cp"] += 10;
-          Update["sp"] -= 1;
+          if (Update["sp"] > 0)
+          {
+            Update["cp"] += 10;
+            Update["sp"] -= 1;
+          }
+          else if(Update["ep"] > 0)
+          {
+            Update["cp"] += 50;
+            Update["ep"] -= 1;
+          }
+          else if(Update["gp"] > 0)
+          {
+            Update["cp"] += 100;
+            Update["gp"] -= 1;
+          }
+          else if(Update["pp"] > 0)
+          {
+            Update["cp"] += 1000;
+            Update["pp"] -= 1;
+          }else{
+            throw new Error(`Not enough money to do that.`);
+          }
           Update = changeValue(Update, {pp :0, gp:0, ep:0, sp :0, cp: 0});
           break;
         case "sp" :
-          Update["sp"] += 10;
-          Update["gp"] -= 1; //add logic to use lower values
+          if (Update["ep"] > 0)
+          {
+            Update["sp"] += 5;
+            Update["ep"] -= 1;
+          }
+          else if(Update["gp"] > 0)
+          {
+            Update["sp"] += 10;
+            Update["gp"] -= 1;
+          }
+          else if(Update["pp"] > 0)
+          {
+            Update["sp"] += 100;
+            Update["pp"] -= 1;
+          }
+          else if(Update["cp"] > 9)
+          {
+            Update["sp"] += 1;
+            Update["cp"] -= 10;
+          }else{
+            throw new Error(`Not enough money to do that.`);
+          }
           Update = changeValue(Update, {pp :0, gp:0, ep:0, sp :0, cp: 0});
           break;
         case "ep" :
-          Update["ep"] += 2;
-          Update["gp"] -= 1; //add logic to use lower values
+          if (Update["gp"] > 0)
+          {
+            Update["ep"] += 2;
+            Update["gp"] -= 1;
+          }
+          else if(Update["pp"] > 0)
+          {
+            Update["ep"] += 20;
+            Update["pp"] -= 1;
+          }
+          else if(Update["sp"] > 4)
+          {
+            Update["ep"] += 1;
+            Update["sp"] -= 5;
+          }
+          else if(Update["cp"] > 49)
+          {
+            Update["ep"] += 1;
+            Update["cp"] -= 50;
+          }else{
+            throw new Error(`Not enough money to do that.`);
+          }
           Update = changeValue(Update, {pp :0, gp:0, ep:0, sp :0, cp: 0});
           break;
         case "gp" :
-          Update["gp"] += 10;
-          Update["pp"] -= 1; //add logic to use lower values
+          if (Update["pp"] > 0)
+          {
+            Update["gp"] += 10;
+            Update["pp"] -= 1;
+          }
+          else if(Update["ep"] > 1)
+          {
+            Update["gp"] += 1;
+            Update["ep"] -= 2;
+          }
+          else if(Update["sp"] > 9)
+          {
+            Update["gp"] += 1;
+            Update["sp"] -= 10;
+          }
+          else if(Update["cp"] > 99)
+          {
+            Update["gp"] += 1;
+            Update["cp"] -= 100;
+          }else{
+            throw new Error(`Not enough money to do that.`);
+          }
           Update = changeValue(Update, {pp :0, gp:0, ep:0, sp :0, cp: 0});
           break;
-        case "pp" : //add logic to use lower values
-          throw new Error(`Not enough money to do that.`)
+        case "pp" :
+          if (Update["gp"] > 9)
+          {
+            Update["pp"] += 1;
+            Update["gp"] -= 10;
+          }
+          else if(Update["ep"] > 19)
+          {
+            Update["pp"] += 1;
+            Update["ep"] -= 20;
+          }
+          else if(Update["sp"] > 99)
+          {
+            Update["pp"] += 1;
+            Update["sp"] -= 100;
+          }
+          else if(Update["cp"] > 999)
+          {
+            Update["pp"] += 1;
+            Update["cp"] -= 1000;
+          }else{
+            throw new Error(`Not enough money to do that.`);
+          }
+          Update = changeValue(Update, {pp :0, gp:0, ep:0, sp :0, cp: 0});
       }
     }
   }
@@ -126,10 +228,20 @@ function divideValue(Object, Value)
       else
       {remainder *= 10;}
     }
-    console.log("In Loop Test | ", key, Update[key]);
-    console.log("In Loop Test | ", remainder);
   }
   console.log(`There was ${remainder/10} cp left over.`);
   return Update;
+}
+
+function x(Original, edit_key)
+{
+  let Update = duplicate(Original);
+  for(let key in Update)
+  {
+    if(key === edit_key)
+    {
+
+    }
+  }
 }
 
