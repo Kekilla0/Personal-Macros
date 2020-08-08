@@ -32,6 +32,8 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
 			fail(args[3],args[5]);
 		}
 	})
+}else{
+	ui.notifications.error(`${args[0]} is not a valid skilll or ability.`);
 }
 
 function succeed(condition, pass)
