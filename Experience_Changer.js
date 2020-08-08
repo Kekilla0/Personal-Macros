@@ -1,7 +1,7 @@
 (() => {
   let targets = game.user.targets;
 
-  if(targets.size < 1) return ui.notifications.error(`Please targets more than 0 tokens.`);
+  if(targets.size < 1) return ui.notifications.error(`Please target more than 0 tokens.`);
 
   let targets_content = ``;
 
