@@ -23,7 +23,6 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
     {
         succeed(args[2],args[4]);
         ChatMessage.create({
-            user : ChatMessage.getWhisperRecipients("GM")[0],
             content : `${actor.name} Succeeded on Passive Test.`,
             speaker : speaker,
             whisper : ChatMessage.getWhisperRecipients("GM"),
@@ -32,7 +31,6 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
     }else{
         fail(args[3],args[5]);
         ChatMessage.create({
-            user : ChatMessage.getWhisperRecipients("GM")[0],
             content : `${actor.name} Failed on Passive Test.`,
             speaker : speaker,
             whisper : ChatMessage.getWhisperRecipients("GM"),
