@@ -12,3 +12,6 @@ let spell_name = "Magic Missile";
     console.log(level);
   });
 })();
+
+
+
