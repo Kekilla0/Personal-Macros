@@ -3,7 +3,7 @@
 ( () =>{
   let dialog_content = `
   <div class = "form-group">
-    <table>
+    <table style="border:1px solid black;margin-left:auto;margin-right:auto;">
       <tr>
         <th>Icon Image</th>
         <th>Toggle Off</th>
