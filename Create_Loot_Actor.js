@@ -8,7 +8,7 @@
 
   for(let token of defeated)
   {
-    let invalid = token.getFlag(`world`,`lootactor`) ? token.getFlag(`world`,`lootactor`) : false;
+    let invalid = await token.getFlag(`world`,`lootactor`) ? await token.getFlag(`world`,`lootactor`) : false;
 
     if(!invalid)
     {
@@ -22,13 +22,13 @@
           i.data.data.price > 0
         ) 
       ).map(i=> items.push(i));
-    }
-
+        }
+    
     token.setFlag(`world`,`lootactor`,true);
   }
+  if(items.length === 0) return ui.notifications.warn(`No valid items on defeated enemies on this map.`);
 
   //create token from "Loot Actor"
-
   let new_token = game.actors.getName("Loot Actor").data.token;
   if(!new_token) return ui.notifications.error(`There is no token by the "Loot Actor" name.`);
 
