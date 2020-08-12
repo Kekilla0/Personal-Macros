@@ -11,10 +11,10 @@
   }
 
   let defeated = 0;
-  canvas.tokens.placeables.forEach(t=> {
+  canvas.tokens.placeables.forEach(async t=> {
     if(t.data.disposition === -1 && t.data.overlayEffect === "icons/svg/skull.svg")
     {
-      let invalid = token.getFlag(`world`,`experienceGiven`) ? token.getFlag(`world`,`experienceGiven`) : false;
+      let invalid = await token.getFlag(`world`,`experienceGiven`) ? await token.getFlag(`world`,`experienceGiven`) : false;
       if(!invalid)
         defeated += t.actor.data.data.details.xp.value;
     }      
@@ -80,8 +80,7 @@ async function deleteDefeated()
   //set flag on token
   for(let token of defeated)
   {
-    token.setFlag(`world`,`experienceGiven`,true);
+    await canvas.tokens.get(token).setFlag(`world`,`experienceGiven`,true);
   }
-
   await canvas.tokens.deleteMany(defeated);
 }
