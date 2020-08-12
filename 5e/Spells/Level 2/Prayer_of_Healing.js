@@ -9,7 +9,7 @@
     let content = result.data.content;
     let level = parseInt(content.charAt(content.indexOf("data-spell-level")+18));
 
-    item.rollDamage({spelllevel : level}).then(result =>{
+    item.rollDamage({spelllevel : level}).then(async (result) =>{
       if(!result) return;
 
       for(let target of game.user.targets)
@@ -23,4 +23,4 @@
       }
     });
   });
-})
+})();
