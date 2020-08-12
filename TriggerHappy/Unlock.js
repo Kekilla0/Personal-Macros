@@ -2,6 +2,8 @@
 //Required arguments => args[0] === doorID
 ////////////////////////args[1] === t/f open or close
 
+if(game.user.isGM) return;
+
 if(args[1] === `t`)
 {
     canvas.walls.get(args[0]).update({

@@ -13,9 +13,11 @@ if(args[6] !== undefined || args[6] === "")
 	game.user.setFlag(`world`,`${args[6]}`,true);
 }
 
+let originalRollMode = game.settings.get("core","rollMode");
+game.settings.set("core","rollMode","gmroll");
 if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
 {
-	game.user.character.rollSkill(args[0], {rollMode : "gmroll" }).then((result)=>{
+	game.user.character.rollSkill(args[0]).then((result)=>{
 		if(result.total >= args[1])
 		{
 			succeed(args[2],args[4]);
@@ -24,7 +26,7 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
 		}
 	});
 }else if(Object.entries(game.dnd5e.config.abilities).map(a=>a[0]).includes(args[0])){
-	game.user.character.rollAbilityTest(args[0], {rollMode : "gmroll" }).then((result)=> {
+	game.user.character.rollAbilityTest(args[0]).then((result)=> {
 		if(result.total >= args[1])
 		{
 			succeed(args[2],args[4]);
@@ -32,9 +34,8 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
 			fail(args[3],args[5]);
 		}
 	})
-}else{
-	ui.notifications.error(`${args[0]} is not a valid skilll or ability.`);
 }
+game.settings.set("core","rollMode",originalRollMode);
 
 function succeed(condition, pass)
 {

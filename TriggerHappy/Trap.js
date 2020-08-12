@@ -31,9 +31,6 @@ if(Object.entries(game.dnd5e.config.skills).map(a=>a[0]).includes(args[0]))
         after();
         game.settings.set("core","rollMode",originalRollMode);
     });
-}else if(args[0]==="none")
-{
-    after();
 }else {
     return ui.notifications.error(`Save Type Error.`);
 }
