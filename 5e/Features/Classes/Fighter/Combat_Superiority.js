@@ -67,7 +67,6 @@
             chosen_maneuver_object.roll().then(async (result) => {
               if(!result) return; 
 
-              //case statement??????
               switch(chosen_maneuver_string)
               {
                 case "Maneuvers: Commander's Strike" :
