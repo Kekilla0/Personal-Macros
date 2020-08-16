@@ -1,9 +1,11 @@
-const macro = game.macros.entities.find(m => m.name === "Call");
-game.dnd5e.rollItemMacro("Dark One's Blessing").then (result => {
-	if(result !== undefined)
-	{
-		let temp = game.user.character.data.data.abilities.cha.mod + game.user.character.data.items.find(it=> it.name === "Warlock").data.levels;
-		game.user.character.update({"data.attributes.hp.temp" : temp});
-		macro.execute(game.user.character.data.name,"Dark Ones Blessing","","");
-	}
-});
+(()=>{
+	let item_actor = item.actor;
+
+	item.roll().then((result)=>{
+		if(!result) return;
+
+		let tempHP = item_actor.data.data.abilities.cha.mod + item_actor.items.find(i=>i.name==="Warlock").data.data.levels;
+		
+		item_actor.update({"data.attributes.hp.temp" : tempHP});
+	});
+})();
