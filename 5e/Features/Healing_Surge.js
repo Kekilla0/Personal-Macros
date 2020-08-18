@@ -2,9 +2,7 @@ const macro = game.macros.entities.find(m => m.name === "HitDie");
 let macro_actor = item.actor;
 let macro_actor_classes = macro_actor.data.items.filter(i=>i.type==="class");
 
-
-
-game.dnd5e.rollItemMacro("Healing Surge").then(result => {
+item.roll().then(result => {
 	if (result !== undefined)
 	{
         if (macro_actor_classes.length !== 1)
