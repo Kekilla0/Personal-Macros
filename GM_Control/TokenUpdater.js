@@ -7,7 +7,9 @@
 ////////////////50 === Always
 
 let new_data = {
+  displayName : 0,
   displayBars : 0,
+  lockRotation : false,
   bar1 : {attribute : "attributes.hp"},
   bar2 : {attribute : "attributes.hp"}
 };
