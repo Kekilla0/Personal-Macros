@@ -24,6 +24,8 @@
 async function change_HP(actor, percentage = 0)
 {
   console.log(actor,percentage);
+  let original_value = actor.data.data.attributes.hp.value;
+  let original_max = actor.data.data.attributes.hp.max;
   let hp_value = Math.floor(actor.data.data.attributes.hp.value * (percentage + 100) / 100);
   let hp_max = Math.floor(actor.data.data.attributes.hp.max * (percentage + 100) / 100);
 
@@ -31,4 +33,29 @@ async function change_HP(actor, percentage = 0)
     "data.attributes.hp.value" : hp_value,
     "data.attributes.hp.max" : hp_max
   });
+
+  let whisper_content=`
+  <div class="form-group">
+    <table>
+      <tr>
+        <th></th>
+        <th>Value</th>
+        <th>Max</th>
+      </tr>
+      <tr>
+        <td>Original</td>
+        <td>${original_value}</td>
+        <td>${original_max}</td>
+      </tr>
+      <tr>
+      <td>Updated</td>
+        <td>${hp_value}</td>
+        <td>${hp_max}</td>
+      </tr>
+    </table>
+  </div>`;
+  ChatMessage.create({
+    content : whisper_content,
+    whisper : ChatMessage.getWhisperRecipients("GM")
+  })
 }

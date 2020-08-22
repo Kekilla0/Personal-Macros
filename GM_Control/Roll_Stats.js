@@ -1,6 +1,6 @@
 (()=>{
-  let statString = `4d6r1kh3`;
-  let stats = Array(6).fill(0).map(e=>new Roll(statString).roll());
+  let statString = `4d6kh3`;
+  let stats = Array(6).fill(0).map(e=>new Roll(statString).roll()).sort((a,b)=>{return b.total-a.total});
   
   let stat_string_message = ``, total_average = 0, total_low = 0, total_high = 0, total_header = 0, average_kept = 0, average_change = 0;
 
@@ -25,9 +25,18 @@
     for(let i = 0; i < total_header; i++)
     {
       let roll = stat.parts[0].rolls[i]?.roll;
+      let discard = stat.parts[0].rolls[i]?.discarded;
+      let rerolled = stat.parts[0].rolls[i]?.rerolled;
+
       if(roll)
       {
-        stat_string_message += `<td style="${colorSetter(roll,1,stat.parts[0].faces)}">${roll}</td>`;
+        if(discard){
+          stat_string_message += `<td style="${colorSetter(roll,1,stat.parts[0].faces)}">${roll}-d</td>`;
+        }else if (rerolled){
+          stat_string_message += `<td style="${colorSetter(roll,1,stat.parts[0].faces)}">${roll}-r</td>`;
+        }else{
+          stat_string_message += `<td style="${colorSetter(roll,1,stat.parts[0].faces)}">${roll}</td>`;
+        }
       }else{
         stat_string_message += `<td></td>`;
       }         
