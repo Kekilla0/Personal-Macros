@@ -54,6 +54,7 @@ async function change_HP(actor, percentage = 0)
       </tr>
     </table>
   </div>`;
+  
   ChatMessage.create({
     content : whisper_content,
     whisper : ChatMessage.getWhisperRecipients("GM")
