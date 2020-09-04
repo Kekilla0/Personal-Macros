@@ -5,6 +5,8 @@
   let attack_roll = await item.rollAttack();
   if(attack_roll.total >= target_actor.data.data.attributes.ac.value)
   {
-    let damage_roll = item.rollDamage();
+    let damage_roll = await item.rollDamage();
   }
 })();
+
+
