@@ -11,19 +11,32 @@
 	}
 
 	let dialog_content = `
-	<p></p>
-	${targets_content}
-	<div class = "form-group">
-		<label for="pp">Platnium<label>
-		<input name="pp" type ="number" value="0" min="-999" max="999"><br>
-		<label for="gp">Gold    <label>
-		<input name="gp" type ="number" value="0" min="-999" max="999"><br>
-		<label for="ep">Electrum<label>
-		<input name="ep" type ="number" value="0" min="-999" max="999"><br>
-		<label for="sp">Silver  <label>
-		<input name="sp" type ="number" value="0" min="-999" max="999"><br>
-		<label for="cp">Copper  <label>
-		<input name="cp" type ="number" value="0" min="-999" max="999"><br>
+  <div class = "form-group">
+    <table style="width: 100%; text-align:center; border: 1px solid black">
+      <tr>
+        <thcolspan="2">${targets_content}</th>
+      </tr>
+      <tr>
+        <td><label for="pp">Platnium<label></td>
+        <td><input name="pp" type ="number" value="0" min="-999" max="999"></td>
+      </tr>
+      <tr>
+        <td><label for="gp">Gold    <label></td>
+        <td><input name="gp" type ="number" value="0" min="-999" max="999"></td>
+      </tr>
+      <tr>
+        <td><label for="ep">Electrum<label></td>
+        <td><input name="ep" type ="number" value="0" min="-999" max="999"></td>
+      </tr>
+      <tr>
+        <td><label for="sp">Silver  <label></td>
+        <td><input name="sp" type ="number" value="0" min="-999" max="999"></td>
+      </tr>
+      <tr>
+        <td><label for="cp">Copper  <label></td>
+        <td><input name="cp" type ="number" value="0" min="-999" max="999"></td>
+      </tr>
+    </table>
 	</div>`;
 
 	new Dialog({
@@ -44,26 +57,41 @@ async function changeMoney(targets,html)
 		sp : parseInt(html.find('[name=sp]')[0].value),
 		cp : parseInt(html.find('[name=cp]')[0].value)
 	}
-
-  //console.log(targets,update_money);
   
   //divide update_money based on # of targets
   difference_money = divideValue(difference_money, targets.size);
 
-  console.log(difference_money);
+  //get rid of "extra" stuff, display all names in header
+  let actor_content = ``;
+  for(let target of targets) {actor_content += `${target.actor.name} `;}
+
+  let table_content = ``;
+  for(let key in difference_money)
+  {
+    if(difference_money[key] > 0)
+      table_content += `<tr><td>${key} :</td><td>${difference_money[key]}</td></tr>`
+  }
+
+  let content = `
+  <table style "width: 100%; text-align:center; border: 1px solid black">
+    <tr>
+      <th colspan="2">Money Change :</th>
+    </tr>
+    <tr>
+      <th colspan="2">${actor_content}</th>
+    </tr>
+    ${table_content}
+  </table>`;
 
 	for(let target of targets)
 	{
     let original_money = duplicate(target.actor.data.data.currency);
     let update_money = changeValue(original_money,difference_money);    
 
-    console.log(target.actor.name)
-    console.log(original_money)
-    console.log(difference_money)
-    console.log(update_money);
-
     await target.actor.update({"data.currency" : update_money});
-	}
+  }
+
+  ChatMessage.create({content, speaker : ChatMessage._getSpeakerFromUser({user : game.user})})
 }
 
 function changeValue(Original, Difference)
@@ -211,7 +239,7 @@ function divideValue(Object, Value)
 {
   if(Value === 1) return Object;
   let remainder = 0;
-  let Update = {pp :0, gp:0, ep:0, sp :0, cp: 0};
+  let Update = {pp :0, gp:0, ep:0, sp :0, cp: 0, remainder : 0};
 
   for(let key in Object)
   {
@@ -229,7 +257,7 @@ function divideValue(Object, Value)
       {remainder *= 10;}
     }
   }
-  console.log(`There was ${remainder/10} cp left over.`);
+  Update.remainder = remainder/10;
   return Update;
 }
 

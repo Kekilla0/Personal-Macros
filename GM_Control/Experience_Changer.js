@@ -21,13 +21,20 @@
   });
   
   let dialog_content =`
-  <p></p>
-  ${targets_content}
   <div class = "form-group">
-    <label for="monsterexp">Monster Experience</label>
-    <input name="monsterexp" type="number" value="${defeated}" disabled><br>
-    <label for="exp">Experience</label>
-    <input name="exp" type="number" value="0" min="0" max="20000"><br>
+    <table style="width: 100%; text-align:center; border: 1px solid black">
+      <tr>
+        <th colspan="2">${targets_content}</th>
+      </tr>
+      <tr>
+        <td><label for="monsterexp">Monster Experience</label></td>
+        <td><input name="monsterexp" type="number" value="${defeated}" disabled></td>
+      </tr>
+      <tr>
+        <td><label for="exp">Added Experience</label></td>
+        <td><input name="exp" type="number" value="0" min="0" max="20000"></td>
+      </tr>
+    </table>
   </div>`;
 
   new Dialog({
@@ -82,5 +89,5 @@ async function deleteDefeated()
   {
     await canvas.tokens.get(token).setFlag(`world`,`experienceGiven`,true);
   }
-  await canvas.tokens.deleteMany(defeated);
+  //await canvas.tokens.deleteMany(defeated);
 }
