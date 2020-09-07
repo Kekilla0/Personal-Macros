@@ -63,12 +63,12 @@ async function changeMoney(targets,html)
 
   //get rid of "extra" stuff, display all names in header
   let actor_content = ``;
-  for(let target of targets) {actor_content += `${target.actor.name} `;}
+  for(let target of targets) {actor_content += `${target.actor.name}, `;}
 
   let table_content = ``;
   for(let key in difference_money)
   {
-    if(difference_money[key] > 0)
+    if(difference_money[key] !== 0)
       table_content += `<tr><td>${key} :</td><td>${difference_money[key]}</td></tr>`
   }
 
