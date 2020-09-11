@@ -705,6 +705,19 @@ async function get_class(name=``)
             type : "insight", 
             valueAffected : ""
           }); 
+          feature = create_modifier({
+            item : feature,
+            condition : "", 
+            effectType : "initiative", 
+            modifier : 1, 
+            modifierType : "constant", 
+            name : `Class Skill Modifier`,
+            notes : "Level 1", 
+            source : `${feature.name}`, 
+            subtab : "misc", 
+            type : "insight", 
+            valueAffected : ""
+          });
           break;
         case "Skill Adept" :
           actor_update.add_skill.push({reason : `Solarian Skill Adept`, limitations : [], restrictions :[],  number : 2});
