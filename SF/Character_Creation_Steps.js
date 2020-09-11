@@ -21,7 +21,7 @@ const languages = Object.entries(CONFIG.SFRPG.languages);   //add languages logi
 
 const actor_update = {
   actor : {}, gender : "", items : [], add_feat : [], add_skill : [], add_spell : [], level : 0, stats : {
-    str : 0, dex : 0, con : 0, wis : 0, int : 0, cha : 0}, roll : true
+    str : 0, dex : 0, con : 0, int : 0, wis : 0, cha : 0}, roll : true
 }
 
 /*
@@ -58,11 +58,6 @@ async function main()
       await update_actor();
       break;
   }
-
-
-  //need to figure out prerequisites for multiple things
-  
-
   console.log(actor_update);
 }
 
@@ -263,15 +258,15 @@ async function get_race(name=``)
             value : 1, max : 1, per : "day"
           };
         }
-        actor_update.items.push(d.data);
+        actor_update.items.push(d);
       });
       actor_update.add_skill.push({reason : `Lashunta Student`, limitations : [], restrictions : [],  number : 2 })
       break;
     default : 
   }
   race_item = fix_stats(race_item);
-  actor_update.items.push(race_item.data);
-  actor_update.items.push(unarmed_item.data);
+  actor_update.items.push(race_item);
+  actor_update.items.push(unarmed_item);
   actor_update.actor.token.vision = true;
   actor_update.actor.data.details.race = name;  
   actor_update.actor.token.lockRotation = true;
@@ -279,6 +274,7 @@ async function get_race(name=``)
   actor_update.actor.token.displayBars = 40;
   actor_update.actor.token.bar1 = {attribute : "attribute.hp"};
   actor_update.actor.token.bar1 = {attribute : "attribute.sp"};
+  actor_update.actor.data.space = "5 ft.";
 }
 
 async function get_theme(name=``)
@@ -321,11 +317,13 @@ async function get_theme(name=``)
       break;
   }
   fix_stats(theme_item);
-  actor_update.items.push(theme_item.data);
+  actor_update.items.push(theme_item);
+  //add theme to character sheet
 }
 
 async function get_class(name=``)
 {
+  //change actor_update.level with class_item.level
   let levels, options, spells, spellsKnown;
 
   let class_item = class_pack.find(r=>r.name === name);
@@ -341,7 +339,6 @@ async function get_class(name=``)
     case "Soldier" : await soldier(); break;
     case "Technomancer" : await technomancer(); break;
   }
-  console.log(name, levels, options, spells, spellsKnown);
 
   for(let i=0; i < spellsKnown[actor_update.level].length; i++)
   {
@@ -353,7 +350,7 @@ async function get_class(name=``)
 
   await get_feature(levels[actor_update.level]);
 
-  actor_update.items.push(class_item.data);
+  actor_update.items.push(class_item);
   
   if(actor_update.level === 1)
   {
@@ -576,21 +573,17 @@ async function get_class(name=``)
 
     actor_update.actor.data.attributes.spellcasting = class_item.data.data.kas;
   }
-
   async function get_feature(value)
   {
     if(value instanceof Array)
     {
       for(let v of value)
       {
-        console.log("get_feature array | ",v);
         await get_feature(v);
       }
     }else{
       let feature = class_feature_pack.find(i=> i.name===value);
       let option;
-
-      console.log("get_feature switch | ", value, feature);
 
       switch(value)
       {
@@ -665,7 +658,7 @@ async function get_class(name=``)
             item : feature,
             condition : "", 
             effectType : "skill", 
-            modifier : "1", 
+            modifier : 1, 
             modifierType : "constant", 
             name : `Class COM Modifier`,
             notes : "Level 1", 
@@ -674,11 +667,11 @@ async function get_class(name=``)
             type : "insight", 
             valueAffected : "com"
           });
-          feature.create_modifier({
+          feature = create_modifier({
             item : feature,
             condition : "", 
             effectType : "skill", 
-            modifier : "1", 
+            modifier : 1, 
             modifierType : "constant", 
             name : `Class ENG Modifier`,
             notes : "Level 1", 
@@ -696,14 +689,14 @@ async function get_class(name=``)
           await getFeature("Channel Skill (Su)");
           break;
         case "Walk the Void (Su)" :
-          class_item.data.csk["pil"] = true;
+          class_item.data.data.csk["pil"] = true;
           break;
         case "Operative's Edge (Ex)":
-          feature.create_modifier({
+          feature = create_modifier({
             item : feature,
             condition : "", 
             effectType : "all-skills", 
-            modifier : "1", 
+            modifier : 1, 
             modifierType : "constant", 
             name : `Class Skill Modifier`,
             notes : "Level 1", 
@@ -717,7 +710,7 @@ async function get_class(name=``)
           actor_update.add_skill.push({reason : `Solarian Skill Adept`, limitations : [], restrictions :[],  number : 2});
           break;
       }
-      actor_update.items.push(feature.data);
+      actor_update.items.push(feature);
     }
   }
 }
@@ -792,15 +785,16 @@ function fix_stats(item)
   return item;
 }
 
+//dont think this is working
 function fix_theme()
 {
   let theme_item = actor_update.items.find(i=>i.type==="theme");
   let class_item = actor_update.items.find(i=>i.type==="class");
 
-  let missing_Skills = Object.entries(class_item.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
+  let missing_Skills = Object.entries(class_item.data.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
 
   //change all calls of create_modifier to use item.data instead of item.
-  if(missing_Skills.find(s=>s[0] === theme_item.data.skill))
+  if(missing_Skills.find(s=>s[0] === theme_item.data.data.skill))
   {
     theme_item = create_modifier({
       item : theme_item,
@@ -820,8 +814,8 @@ function fix_theme()
 
 async function get_skills()
 {
-  let class_item = actor_update.items.find(i=>i.type === `class`);
-  let missing_Skills = Object.entries(class_item.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
+  let class_item = actor_update.items.find(i=>i.data.type === `class`);
+  let missing_Skills = Object.entries(class_item.data.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
   let option = ``;
 
   for(let skill of actor_update.add_skill)
@@ -836,7 +830,7 @@ async function get_skills()
     {
       option = await choose(missing_Skills,`Choose one skill (${skill.reason}) : `);
       missing_Skills = missing_Skills.filter(s=> s[0]!==option);
-      class_item.data.csk[option] = true;
+      class_item.data.data.csk[option] = true;
     }
 
     missing_Skills.push(...skill.limitations);
@@ -890,7 +884,7 @@ async function get_spell(value)
     }
   }else{
     let spell = spell_pack.find(i=>i.name===value);
-    actor_update.items.push(spell.data);
+    actor_update.items.push(spell);
   }
 }
 
@@ -905,9 +899,12 @@ async function roll_stats(){
     <table style="text-align:center">
       <tr><th>STR</th><th>DEX</th><th>CON</th><th>INT</th><th>WIS</th><th>CHA</th></tr>
       <tr>${Object.entries(actor_update.stats).map(s => `<td style="${getColor(remove_choice,`${s[0]}`)}">${s[1]}</td>`).join(``)}</tr>
-    </table><hr><table style="text-align:center">
-      <tr>${stat_rolls.filter(s=> !remove_rolls.includes(s)).map(s=> `<td style="${getColor(remove_rolls,`${s}`)}">${s.total}</td>`).join(``)}</tr>
     </table>
+    <hr>
+    <table style="text-align:center">
+      <tr>${stat_rolls.filter(s=> !remove_rolls.includes(s)).map(s=> `<td>${s.total}</td>`).join(``)}</tr>
+    </table>
+    <hr>
     <h2>Choose stat for <b>${stat.total}</b> roll : </h2>`;
     let options = stats.filter(s=> !remove_choice.includes(s[0]));
     let choice = await choose(options, prompt);
