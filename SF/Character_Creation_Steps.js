@@ -17,66 +17,53 @@ const classes = ["Envoy","Mechanic","Mystic","Operative","Solarian","Soldier","T
 const stats = Object.entries(CONFIG.SFRPG.abilities);
 const skills = Object.entries(CONFIG.SFRPG.skills);
 const alignments = Object.entries(CONFIG.SFRPG.alignments);
-const languages = Object.entries(CONFIG.SFRPG.languages);
+const languages = Object.entries(CONFIG.SFRPG.languages);   //add languages logic?
 
 const actor_update = {
-  actor : {}, items : [], gender : "", add_feat : [], add_skill : [], add_spell : [], level : 0, stats : {
-    str : 0, dex : 0, con : 0, wis : 0, int : 0, cha : 0, roll : true
-  }  
+  actor : {}, gender : "", items : [], add_feat : [], add_skill : [], add_spell : [], level : 0, stats : {
+    str : 0, dex : 0, con : 0, wis : 0, int : 0, cha : 0}, roll : true
 }
 
 /*
-  add_skill : [{ reason : ``, limitations : [], number : 0 } ],
-  add_feat : [{ reason : ``, limitations : [], number : 0 } ],
-  add_spell : [{ reason : ``, limitations : [], number : 0 } ]
+  limitations === `What can't be there`
+  restrictions === `What can they choose from`
+
+  add_skill : [{ reason : ``, limitations : [], restrictions : [], number : 0 }],
+  add_feat : [{ reason : ``, limitations : [], restrictions : [], number : 0 }],
+  add_spell : [{ reason : ``, limitations : [], restrictions : [], number : 0 }]
 */
 
 main();
 
-
-/*
-  Add items to the actor_update.actor instead 
- */
 async function main()
 {
-  //add some logic for "start this character" & "level up this character"
-
-
-
   await get_actor(await choose(actors, `Choose Actor : `));
 
   switch(actor_update.level)
   {
     case 1 :
-      actor_update.add_feat.push({reason : `Level 1`, limitations : [], number : 1});
+      actor_update.add_feat.push({reason : `Level 1`, limitations : [], restrictions : [], number : 1});
       await get_gender(await choose(gender,`Choose Gender : `));
       await get_alignment(await choose (alignments, `Choose Alignment : `));
       await get_race(await choose(races, `Choose Race : `));
       await get_theme(await choose(themes, `Choose Theme : `)); 
       await get_class(await choose(classes, `Choose Class : `));      
-      if(actor_update.stats.roll) await roll_stats();
+      if(actor_update.roll) await roll_stats();
       await get_skills();
-      //await get_spells();
-      //fix theme
+      await get_spells();
+      await fix_theme();
+      //await get_feats();
+      //await get_languages();
+
       await update_actor();
       break;
   }
-  
 
-  
-  //get_spell(going to need to figure something out here!)
-
-  //prompt to ask what style of roll choice
 
   //need to figure out prerequisites for multiple things
   
-  
-
-  //theme skill validation, maybe get the option from choose and then use get_theme after everything else is done
 
   console.log(actor_update);
-
-  
 }
 
 async function get_gender(gender=``)
@@ -103,10 +90,8 @@ async function get_actor(id=``)
   for(let stat of stats)
   {
     actor_update.stats[stat[0]] = actor_update.actor.data.abilities[stat[0]].base;
-    if(actor_update.actor.data.abilities[stat[0]].base !== 10) actor_update.stats.roll = false;
+    if(actor_update.actor.data.abilities[stat[0]].base !== 10) actor_update.roll = false;
   }
-
-  console.log(actor_update);
 }
 
 async function get_race(name=``)
@@ -120,6 +105,8 @@ async function get_race(name=``)
 
   if(!race_item) return ui.notifications.error(`Race does not exist`);
   if(!unarmed_item) return ui.notifications.error(`Unarmed strike does not exist`);
+
+  //add level switch
 
   switch(name)
   {
@@ -136,7 +123,7 @@ async function get_race(name=``)
       race_item.data.data.abilityMods.parts[0][1] = await choose(stats, `Choose One ability (Human Ability Boost) : `);
       
       //bonus feat
-      actor_update.add_feat({reason : ``, limitations : [], number : 1});
+      actor_update.add_feat.push({reason : `Human Race`, limitations : [], restrictions : [], number : 1});
       //bonus ranks
       break;
     case "Kasatha" :
@@ -278,7 +265,7 @@ async function get_race(name=``)
         }
         actor_update.items.push(d.data);
       });
-      actor_update.add_skill.push({reason : `Lashunta Student`, limitations : [], number : 2 })
+      actor_update.add_skill.push({reason : `Lashunta Student`, limitations : [], restrictions : [],  number : 2 })
       break;
     default : 
   }
@@ -299,9 +286,11 @@ async function get_theme(name=``)
   let theme_item = theme_pack.find(r=>r.name === name);
   if(!theme_item) return ui.notifications.error(`Theme does not exist`);
 
+  //add level switch
+  let option;
+
   switch(name)
   {
-    //nothing needs to be done?? i guess??
     case "Ace Pilot" :
       //Piloting
       break;
@@ -321,7 +310,8 @@ async function get_theme(name=``)
       //Mysticism
       break;
     case "Scholar" :
-      //choose_skill();
+      option = await choose(skills, `Choose one skill (Scholar Skill Change) : `);
+      theme_item.data.data.skill = option;
       break;
     case "Spacefarer" :
       //Physical Sciences
@@ -329,15 +319,15 @@ async function get_theme(name=``)
     case "Xenoseeker" :
       //life sciences
       break;
-    default :
-      break;
   }
   fix_stats(theme_item);
   actor_update.items.push(theme_item.data);
 }
 
-async function get_class(name=``, level = 1)
+async function get_class(name=``)
 {
+  let levels, options, spells, spellsKnown;
+
   let class_item = class_pack.find(r=>r.name === name);
   if(!class_item) return ui.notifications.error(`Class does not exist`);
 
@@ -348,38 +338,296 @@ async function get_class(name=``, level = 1)
     case "Mystic" : await mystic(); break;
     case "Operative" : await operative(); break;
     case "Solarian" : await solarian(); break;
-    case "Solider" : await solider(); break;
+    case "Soldier" : await soldier(); break;
+    case "Technomancer" : await technomancer(); break;
   }
+  console.log(name, levels, options, spells, spellsKnown);
+
+  for(let i=0; i < spellsKnown[actor_update.level].length; i++)
+  {
+    if(spellsKnown[actor_update.level][i] !== 0)
+    {
+      actor_update.add_spell.push({reason : `${class_item.name} Level ${actor_update.level}`, limitations : [], restrictions : spells[i] , number : spellsKnown[actor_update.level][i]});
+    }
+  } 
+
+  await get_feature(levels[actor_update.level]);
+
   actor_update.items.push(class_item.data);
   
-  if(level === 1)
+  if(actor_update.level === 1)
   {
     actor_update.actor.data.currency.credit = 1000;
+    actor_update.actor.data.attributes.keyability = class_item.data.data.kas;
+    actor_update.actor.data.details.class = name;
   }
 
-  async function envoy()
-  {
-    const envoy_class_levels = {
+  async function envoy(){
+    levels = {
       1 : ["Envoy Improvisation", "Expertise (Ex)", "Skill Expertise (Ex)"]
-    }
-
-    const envoy_improv_options =
-    {
-      1: ["Clever Feint (Ex)", "Dispiriting Taunt (Ex)", "Don't Quit (Ex)", "Expanded Attunement (Ex)","Get 'Em (Ex)", "Inspiring Boost (Ex)", "Look Alive (Ex)", "Not in the Face (Ex)", "Universal Expression (Ex)", "Watch Your Step (Ex)"]
     };
 
-    console.log(envoy_class_levels,level);
+    options = {
+      "Envoy Improvisation" : {
+        1 : ["Clever Feint (Ex)", "Dispiriting Taunt (Ex)", "Don't Quit (Ex)", "Expanded Attunement (Ex)","Get 'Em (Ex)", "Inspiring Boost (Ex)", "Look Alive (Ex)", "Not in the Face (Ex)", "Universal Expression (Ex)", "Watch Your Step (Ex)"]
+      }
+    }
 
-    let features = class_feature_pack.filter(i=> envoy_class_levels[level].includes(i.name));
+    spells = {};
 
-    for(let feature of features)
+    spellsKnown = {
+      1 : [0,0,0,0,0,0,0],
+    }
+  }
+  async function mechanic(){
+    levels = {
+      1 : ["Artificial Intelligence (Ex)", "Bypass (Ex)", "Custom Rig (Ex)"]
+    }
+
+    options = {
+      "Artificial Intelligence (Ex)" : {
+        1 : ["Drone","Exocortex"]
+      }
+    }
+    spells = {};
+
+    spellsKnown = {
+      1 : [0,0,0,0,0,0,0],
+    }
+
+  }
+  async function mystic(){
+    levels = {
+      1 : ["Connection", "Healing Touch (Su)"]
+    }
+
+    options = {
+      "Connection" : {
+        1 : ["Akashic","Empath","Healer", "Mindbreaker", "Overlord", "Star Shaman", "Xenodruid"]
+      },
+      "Akashic" : {
+        1 : {
+          spell : "Identify",
+          feature : "Akashic Knowledge (Ex)"
+        }
+      },
+      "Empath" : {
+        1 : {
+          spell : "Detect Thoughts",
+          feature : "Empath (Su)"
+        }
+      },
+      "Healer" : {
+        1 : {
+          spell : "Mystic Cure*",
+          feature : "Healing Channel (Su)"
+        }
+      },
+      "Mindbreaker" : {
+        1 : {
+          spell : "Mind Thrust", 
+          feature : "Share Pain (Su)"
+        }
+      },
+      "Overlord" : {
+        1 : {
+          spell : "Command",
+          feature : "Inexplicable Commands (Su)"
+        }
+      },
+      "Star Shaman" : {
+        1 : {
+          spell : "Magic Missile",
+          feature : "Walk the Void (Su)"
+        }
+      }, 
+      "Xenodruid" : {
+        1 : {
+          spell : "Life Bubble",
+          feature : "Speak with Animals (Su)"
+        }
+      }
+    }
+
+    spells = {
+      0 : ["Daze", "Detect Afflication", "Detect Magic", "Fatigue", "Ghost Sound", "Grave Words", "Psychokinetic Hand", "Stabilize", "Telekinetic Projectile", "Telepathic Message", "Token Spell"],
+      1 : ["Charm Person", "Command", "Confusion, Lesser", "Detect Radiation", "Detect Thoughts", "Disguise Self", "Fear", "Identify", "Keen Senses", "Life Bubble", "Mind Link", "Mind Thrust", "Mystic Cure*", "Reflecting Armor*", "Remove Condition, Lesser*", "Share Language", "Wisp Ally"]
+    }
+
+    spellsKnown = {
+      1 : [4,2,0,0,0,0,0],
+    }
+
+    actor_update.actor.data.attributes.spellcasting = class_item.data.data.kas;
+  }
+  async function operative(){
+    levels = {
+      1 : ["Operative's Edge (Ex)", "Specialization", "Trick Attack (Ex)"]
+    };
+
+    options = {
+      "Specialization" : {
+        1 : ["Daredevil","Detective","Explorer", "Ghost", "Hacker", "Spy", "Thief"]
+      },
+      "Daredevil" : {
+        1 : "Versatile Movement (Ex)",
+      },
+      "Detective" : {
+        1 : "Glimpse the Truth (Ex)",
+      },
+      "Explorer" : {
+        1 : "Ever Vigilant (Ex)",
+      },
+      "Ghost" : {
+        1 : "Cloaking Field (Ex)",
+      },
+      "Hacker" : {
+        1 : "Elusive Hacker (Ex)",
+      },
+      "Spy" : {
+        1 : "Master of Disguise (Ex)",
+      },
+      "Thief" : {
+        1 : "Holographic Distraction (Ex)",
+      }
+    }
+
+    spells = {};
+
+    spellsKnown = {
+      1 : [0,0,0,0,0,0,0],
+    }
+  }
+  async function solarian(){
+    levels = {
+      1 : ["Skill Adept", "Solar Manifestation (Su)", "Stellar Mode (Su)", "Stellar Revelation", "Black Hole (Su)", "Supernova (Su)"]
+    };
+
+    options = {
+      "Solar Manifestation (Su)" : {
+        1 : ["Solar Armor", "Solar Weapon"]
+      },
+      "Stellar Revelation" : {
+        1 : []
+      }
+    };
+
+    spells = {};
+
+    spellsKnown = {
+      1 : []
+    }
+  }
+  async function soldier(){
+    levels = {
+      1 : ["Fighting Style", "Primary Style Technique"]
+    };
+
+    options = {
+      "Fighting Style" : {
+        1 : ["Arcane Assailant", "Armor Storm", "Blitz", "Bombard", "Guard", "Hit-and-Run", "Sharpshoot"]
+      },
+      "Arcane Assailant" : {
+        1 : "Rune of the Eldritch Knight (Su)(1st)"
+      },
+      "Armor Storm" : {
+        1 : "Hammer Fist (Ex)(1st)"
+      },
+      "Blitz" : {
+        1 : "Rapid Response (Ex)(1st)"
+      },
+      "Bombard" : {
+        1 : "Grenade Expert (Ex)(1st)"
+      },
+      "Guard" : {
+        1 : "Armor Training (Ex)(1st)"
+      },
+      "Hit-and-Run" : {
+        1 : "Opening Volley (Ex)(1st)"
+      },
+      "Sharpshoot" : {
+        1 : "Sniper's Aim (Ex)(1st)"
+      }
+    };
+
+    spells = {};
+
+    spellsKnown = { 
+      1 : []
+    };
+  }
+  async function technomancer(){
+    levels = {
+      1 : "Spell Cache (Su)",
+    };
+
+    options = {
+
+    };
+
+    spells = {
+      0 : ["Dancing Lights", " Daze", "Detect Affliction", "Detect Magic", "Energy Ray", "Ghost Sound", "Mending", "Psychokinetic Hand", "Telephatic Message", "Token Spell", "Transfer Charge"],
+      1 : ["Comprehend Languages", "Detect Radiation", "Detect Tech", "Disguise Self", "Erase", "Flight", "Grease", "Hold Portal", "Holographic Image", "Identify", "Jolting Surge", "Keen Senses", "Life Bubble", "Magic Missile", "Overheat", "Supercharge Weapon", "Unseen Servant"],
+    };
+
+    spellsKnown = {
+      1 : [4,2,0,0,0,0,0],
+    }
+
+    actor_update.actor.data.attributes.spellcasting = class_item.data.data.kas;
+  }
+
+  async function get_feature(value)
+  {
+    if(value instanceof Array)
     {
-      let option;
-      switch(feature.name)
+      for(let v of value)
       {
-        case "Envoy Improvisation":
-          option = await choose(envoy_improv_options[level], `Choose an Envoy Improvisation : `);
-          actor_update.items.push(class_feature_pack.find(i=>i.name===option).data);
+        console.log("get_feature array | ",v);
+        await get_feature(v);
+      }
+    }else{
+      let feature = class_feature_pack.find(i=> i.name===value);
+      let option;
+
+      console.log("get_feature switch | ", value, feature);
+
+      switch(value)
+      {
+        case "Envoy Improvisation" :
+        case "Specialization" :
+        case "Solar Manifestation (Su)" :
+        case "Artificial Intelligence (Ex)" :
+        case "Connection" :
+        case "Fighting Style":
+          option = await choose(options[value][actor_update.level], `Choose an ${value} : `);
+          await get_feature(option);
+          break;
+        case "Daredevil" : 
+        case "Detective" :
+        case "Explorer" :
+        case "Ghost" :
+        case "Hacker" :
+        case "Spy" :
+        case "Thief" :
+        case "Arcane Assailant" :
+        case "Armor Storm" :
+        case "Blitz" :
+        case "Bombard" :
+        case "Guard" :
+        case "Hit-and-Run" :
+        case "Sharpshoot" :
+          await get_feature(options[value][actor_update.level]);
+          break;
+        case "Akashic" :
+        case "Empath" :
+        case "Healer" :
+        case "Mind Breaker" : 
+        case "Overlord" :
+        case "Star Shaman" :
+        case "Xenodruid" :
+          await get_feature(options[value][actor_update.level].feature);
+          await get_spell(options[value][actor_update.level].spell); 
           break;
         case "Expertise (Ex)" :
           feature = create_modifier({
@@ -397,7 +645,7 @@ async function get_class(name=``, level = 1)
           });
           break;
         case "Skill Expertise (Ex)" :
-          option = await choose(skills.filter(s=> !["sen", "lsc", "mys", "phs", "sur"].includes(s[0])), `Choose a skil for Skill Expertise(Ex) : `);
+          option = await choose(skills.filter(s=> !["sen", "lsc", "mys", "phs", "sur"].includes(s[0])), `Choose a skill for ${value} : `);
           feature = create_modifier({
             item : feature,
             condition : "", 
@@ -412,43 +660,8 @@ async function get_class(name=``, level = 1)
             valueAffected : option
           });
           break;
-      }
-      actor_update.items.push(feature.data);
-    }
-  }
-  async function mechanic()
-  {
-    const mechanic_class_levels = {
-      1 : ["Artificial Intelligence (Ex)", "Bypass (Ex)", "Custom Rig (Ex)"]
-    }
-
-    const mechanic_ai_options = [
-      "Drone","Exocortex"
-    ];
-
-    let features = class_feature_pack.filter(i=>mechanic_class_levels[level].includes(i.name));
-
-    for(let feature of features)
-    {
-      let option;
-      switch(feature.name)
-      {
-        case "Artificial Intelligence (Ex)":
-          option = await choose(mechanic_ai_options, `Choose Artificial Intelligence Option : `);
-          actor_update.items.push(class_feature_pack.find(i=>i.name===option).data);
-          if(option === "Exocortex")
-          {
-            //Combat Tracking Proficencies
-            actor_update.items.push(class_feature_pack.find(i=>i.name === "Combat Tracking (Ex)").data);
-            //add_prof("weaponProf","larms");
-            add_prof("armorProf","hvy");
-            
-            actor_update.items.push(class_feature_pack.find(i=>i.name === "Memory Module (Ex)").data);
-            //add feat --- Skill Focus
-          }
-          break;
         case "Bypass (Ex)" :
-          feature.create_modifier({
+          feature = create_modifier({
             item : feature,
             condition : "", 
             effectType : "skill", 
@@ -475,83 +688,16 @@ async function get_class(name=``, level = 1)
             valueAffected : "eng"
           });
           break;
-      }
-      actor_update.items.push(feature.data);
-    }
-  }
-  async function mystic()
-  {
-    const mystic_class_levels = {
-      1 : ["Connection", "Healing Touch (Su)"]
-    }
-
-    const mystic_connection_options = [
-      "Akashic","Empath","Healer", "Mindbreaker", "Overlord", "Star Shaman", "Xenodruid"
-    ];
-
-    let features = class_feature_pack.filter(i=>mystic_class_levels[level].includes(i.name));
-
-    for(let feature of features)
-    {
-      let option;
-      switch(feature.name)
-      {
-        case "Connection":
-          option = await choose(mystic_connection_options, `Choose your Mystic Connection Option : `);
-          actor_update.items.push(class_feature_pack.find(i=>i.name===option));
-          switch(option) {
-            case "Akashic" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Akashic Knowledge"));
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Channel Skill (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Identify"));
-              break;
-            case "Empath" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Empath (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Detect Thoughts"));
-              break;
-            case "Healer":
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Healing Channel (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Mystic Cure*"));
-              break;
-            case "Mind Breaker" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Share Pain (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Mind Thrust"));
-              break;
-            case "Overlord" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Inexplicable Commands (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Command"));
-              break;
-            case "Star Shaman" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Walk the Void (Su)"));
-              class_item.data.csk["pil"] = true;
-              actor_update.items.push(spell_pack.find(i=>i.name==="Magic Missile"));
-              break;
-            case "Xenodruid" :
-              actor_update.items.push(class_feature_pack.find(i=>i.name==="Speak with Animals (Su)"));
-              actor_update.items.push(spell_pack.find(i=>i.name==="Life Bubble"));
-              break;
-          }  
+        case "Exocortex" : 
+          add_prof("armorProf","hvy");
+          await getFeature(["Combat Tracking (Ex)", "Memory Module (Ex)"]);
           break;
-      }
-      actor_update.items.push(feature.data);
-    }
-  }
-  async function operative(){
-    const operative_class_levels = {
-      1 : ["Operative's Edge (Ex)", "Specialization", "Trick Attack (Ex)"]
-    }
-
-    const operative_specialization_options = [
-      "Daredevil","Detective","Explorer", "Ghost", "Hacker", "Spy", "Thief"
-    ];
-
-    let features = class_feature_pack.filter(i=> operative_class_levels[level].includes(i.name));
-
-    for(let feature of features)
-    {
-      let option;
-      switch(feature.name)
-      {
+        case "Akashic Knowledge (Ex)" :
+          await getFeature("Channel Skill (Su)");
+          break;
+        case "Walk the Void (Su)" :
+          class_item.data.csk["pil"] = true;
+          break;
         case "Operative's Edge (Ex)":
           feature.create_modifier({
             item : feature,
@@ -567,78 +713,13 @@ async function get_class(name=``, level = 1)
             valueAffected : ""
           }); 
           break;
-        case "Specialization" :
-          option = await choose(operative_specialization_options, `Chose Operative Specialization : `);
-          actor_update.items.push(class_feature_pack.find(i=>i.name===option));
-          let spec_option;
-          switch(option)
-          {
-            case "Daredevil" :
-              spec_option = "Versatile Movement (Ex)";
-              break;
-            case "Detective" :
-              spec_option = "Glimpse the Truth (Ex)";
-              break;
-            case "Explorer" :
-              spec_option = "Ever Vigilant (Ex)";
-              break;
-            case "Ghost" :
-              spec_option = "Cloaking Field (Ex)"
-              break;
-            case "Hacker" :
-              spec_option = "Elusive Hacker (Ex)"
-              break;
-            case "Spy" :
-              spec_option = "Master of Disguise (Ex)"
-              break;
-            case "Thief" :
-              spec_option = "Holographic Distraction (Ex)"
-              break;
-          }
-          actor_update.items.push(class_feature_pack.find(i=>i.name===spec_option));
-          break;
-      }
-      actor_update.items.push(feature.data);
-    }
-  }
-  async function solarian(){
-    const solarian_class_levels = {
-      1 : ["Skill Adept", "Solar Manifestation (Su)", "Stellar Mode (Su)", "Stellar Revelation"]
-    }
-
-    const stellar_revelation = {
-      1 : ["Black Hole (Su)", "Supernova (Su)"]
-    }
-
-    let features = class_feature_pack.filter(i=> solarian_class_levels[level].includes(i.name));
-    for(let feature of features)
-    {
-      let option;
-      switch(feature.name)
-      {
         case "Skill Adept" :
-          actor_update.add_skill.push({reason : `Solarian Skill Adept`, limitations : [], number : 2});
-          break;
-        case "Solar Manifestation (Su)":
-          option = await choose(["Solar Armor","Solar Weapon"],`Choose your Solar Manifestation : `);
-          actor_update.items.push(class_feature_pack.find(i=>i.name===option).data);
-          break;
-        case "Stellar Revelation" :
-          if (level = 1 )
-          {
-            class_feature_pack.filter(i=>stellar_revelation[level].includes(i.name)).forEach(i=>{
-              actor_update.items.push(i.data);
-            })
-          }
+          actor_update.add_skill.push({reason : `Solarian Skill Adept`, limitations : [], restrictions :[],  number : 2});
           break;
       }
       actor_update.items.push(feature.data);
     }
   }
-  async function solider(){
-
-  }
-  //create a class feature "getter" that gets any class feature available based on the classes options
 }
 
 async function get_alignment(name=``){
@@ -711,13 +792,37 @@ function fix_stats(item)
   return item;
 }
 
+function fix_theme()
+{
+  let theme_item = actor_update.items.find(i=>i.type==="theme");
+  let class_item = actor_update.items.find(i=>i.type==="class");
+
+  let missing_Skills = Object.entries(class_item.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
+
+  //change all calls of create_modifier to use item.data instead of item.
+  if(missing_Skills.find(s=>s[0] === theme_item.data.skill))
+  {
+    theme_item = create_modifier({
+      item : theme_item,
+      condition : "", 
+      effectType : "skill", 
+      modifier : 1, 
+      modifierType : "constant", 
+      name : `Theme ${theme_item.data.skill} Modifier`,
+      notes : "Level 0", 
+      source : `${theme_item.name}`, 
+      subtab : "misc", 
+      type : "untyped", 
+      valueAffected : theme_item.data.skill
+    });
+  }
+}
+
 async function get_skills()
 {
   let class_item = actor_update.items.find(i=>i.type === `class`);
   let missing_Skills = Object.entries(class_item.data.csk).filter(s=>!s[1]).map(s=>[s[0],CONFIG.SFRPG.skills[s[0]]]);
   let option = ``;
-
-  console.log(class_item,missing_Skills,actor_update);
 
   for(let skill of actor_update.add_skill)
   {
@@ -725,15 +830,71 @@ async function get_skills()
       ? missing_Skills.filter(s=> skill.limitations.includes(s))
       : missing_Skills;
 
+    //figure out how to handle "restrictions"
+
     for(let i = 0; i < skill.number; i++)
     {
       option = await choose(missing_Skills,`Choose one skill (${skill.reason}) : `);
       missing_Skills = missing_Skills.filter(s=> s[0]!==option);
       class_item.data.csk[option] = true;
     }
+
+    missing_Skills.push(...skill.limitations);
   }
 }
 
+async function get_feats()
+{
+  //gain feats_list
+  //gain items_actor
+  //check prereq for remaining feats_list
+
+  for(let feat of actor_update.add_feat)
+  {
+    //check vs limitations of feats
+
+    //check vs restrictions of feats
+
+    for(let i=0; i<feat.number;i++)
+    {
+      //get option
+      //remove option from feat_list
+      //retrieve and add item to actor_update.items
+    }
+    //reapply the limitations to feats_list
+  }
+}
+
+async function get_spells()
+{
+  for(let spell of actor_update.add_spell)
+  {
+    let option;
+    //remove from spell.restrictions based on already owned items.
+    for(let i = 0; i < spell.number; i++)
+    {
+      option = await choose(spell.restrictions, `Choose Spell (${spell.reason}) : `);
+      spell.restrictions = spell.restrictions.filter(i=> i !== option);
+      await get_spell(option);
+    }
+  }
+}
+
+async function get_spell(value)
+{
+  if(value instanceof Array)
+  {
+    for(let v of value)
+    {
+      await get_spell(v);
+    }
+  }else{
+    let spell = spell_pack.find(i=>i.name===value);
+    actor_update.items.push(spell.data);
+  }
+}
+
+//problem with stuff here? the way its displayed at least
 async function roll_stats(){
   let stat_rolls =  Array(6).fill(0).map(e=>new Roll(`4d6kh3`).roll()).sort((a,b)=>{return b.total-a.total});
   let remove_choice = [], remove_rolls = [];
@@ -764,6 +925,7 @@ async function roll_stats(){
   }
 }
 
+//change this to make it "prettier"
 async function choose(options = [], prompt = ``)
 {
   let value = await new Promise((resolve, reject) => {
@@ -779,7 +941,6 @@ async function choose(options = [], prompt = ``)
       buttons : { OK : {label : `OK`, callback : async (html) => { resolve(html.find('#choice').val()); } } }
     }).render(true);
   });
-  //console.log(prompt,value);
   return value;
 }
 
@@ -788,4 +949,6 @@ async function update_actor()
   let actor = game.actors.get(actor_update.actor._id);
   await actor.update(actor_update.actor);
   await actor.createEmbeddedEntity("OwnedItem", actor_update.items);
+
+  //update actors hp/sp/rp
 }
