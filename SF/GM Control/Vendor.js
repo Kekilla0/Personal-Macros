@@ -1,3 +1,14 @@
+/*
+  Macro will allow players to purchase items of equal level or specificed if used by GM.
+
+  To use : if you are the owner of a character (as set by the bottom left hand box) it will default to this actor, if not it will
+  default to a selected token, and lastly it will pick up on a the first target you have selected.
+
+  This will create items and reduce credits as you use them. If you overspend your credits it will exit without changing either.
+
+  Items purchased and value associated will be displayed in the chat window when complete.
+*/
+
 (async ()=>{
   const equip_pack = await game.packs.find(p=>p.metadata.label === "Equipment" && p.metadata.package === "sfrpg");
   const equip_items = await equip_pack.getContent();
@@ -13,7 +24,8 @@
   let money = macro_actor.data.data.currency.credit;
   let level = macro_actor.data.data.details.level.value;
 
-  let settlement_size = parseInt(await choose(settlement_options, `Choose settlement size : `));
+  
+  let settlement_size = game.user.isGM ? parseInt(await choose(settlement_options, `Choose settlement size : `)) : 0;
   let vendor_type = await choose(vendor_options, `Choose vendor type : `);
 
   let vendor_item_list = equip_items.filter(i=> i.data.data.level <= (level+settlement_size) && i.type === vendor_type);
@@ -73,8 +85,6 @@
             }            
           }).filter(element=> element !== undefined);
 
-          console.log(items);
-
           await macro_actor.createEmbeddedEntity("OwnedItem", items);
 
           //chat output
@@ -114,7 +124,8 @@
 
     let display_dialog = new Dialog({
       content : dialog_content,
-      buttons : dialog_buttons
+      buttons : dialog_buttons,
+      close : () => { clearInterval(interval); }
     });
 
     display_dialog.options.width = 600;
