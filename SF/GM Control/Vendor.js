@@ -80,8 +80,7 @@
           //chat output
           ChatMessage.create({
             speaker : ChatMessage.getSpeaker(macro_actor),
-            content : `
-            <table style="width=100%; text-align:center;">
+            content : `<table style="width=100%; text-align:center;">
               <tr style="border-bottom:1px solid #000">
                 <th style="width=60%"><img src="${macro_actor.data.token.img}" width="50" height="50"></th>
                 <th style="width=40%" colspan="2">${macro_actor.name}</th>
@@ -97,7 +96,7 @@
                   <td style="width=20%">${item.data.data.price}</td>
                   <td style="width=20%">${item.data.data.quantity}</td>
                 </tr>
-              `)}
+              `).join(``)}
             </table>
             <hr>
             Overall cost : ${cost}
