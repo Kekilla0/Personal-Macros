@@ -1,0 +1,1 @@
+//check players weath (total value of gear + credits) vs 11-5 table on page 391

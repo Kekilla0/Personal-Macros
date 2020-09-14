@@ -34,7 +34,7 @@
     add_spell : [{ reason : ``, limitations : [], restrictions : [], number : 0 }]
   */
 
-  main();
+  await main();
 
   async function main()
   {
@@ -684,10 +684,10 @@
             break;
           case "Exocortex" : 
             add_prof("armorProf","hvy");
-            await getFeature(["Combat Tracking (Ex)", "Memory Module (Ex)"]);
+            await get_feature(["Combat Tracking (Ex)", "Memory Module (Ex)"]);
             break;
           case "Akashic Knowledge (Ex)" :
-            await getFeature("Channel Skill (Su)");
+            await get_feature("Channel Skill (Su)");
             break;
           case "Walk the Void (Su)" :
             class_item.data.data.csk["pil"] = true;

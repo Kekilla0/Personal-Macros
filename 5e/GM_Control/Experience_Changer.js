@@ -1,5 +1,6 @@
 (() => {
-  let targets = game.user.targets;
+  const targets = game.user.targets;
+  const effect = `icons/svg/skull.svg`;
 
   if(targets.size < 1) return ui.notifications.error(`Please targets more than 0 tokens.`);
 
@@ -11,12 +12,12 @@
   }
 
   let defeated = 0;
-  canvas.tokens.placeables.forEach(async t=> {
-    if(t.data.disposition === -1 && t.data.overlayEffect === "icons/svg/skull.svg")
+  canvas.tokens.placeables.forEach(async token=> {
+    if(token.data.disposition === -1 && token.data.overlayEffect === effect)
     {
       let invalid = await token.getFlag(`world`,`experienceGiven`) ? await token.getFlag(`world`,`experienceGiven`) : false;
       if(!invalid)
-        defeated += t.actor.data.data.details.xp.value;
+        defeated += token.actor.data.data.details.xp.value;
     }      
   });
   
@@ -27,12 +28,12 @@
         <th colspan="2">${targets_content}</th>
       </tr>
       <tr>
-        <td><label for="monsterexp">Monster Experience</label></td>
-        <td><input name="monsterexp" type="number" value="${defeated}" disabled></td>
+        <td style="width=50%"><label for="monsterexp">Monster Experience</label></td>
+        <td style="width=50%"><input name="monsterexp" type="number" value="${defeated}" disabled></td>
       </tr>
       <tr>
-        <td><label for="exp">Added Experience</label></td>
-        <td><input name="exp" type="number" value="0" min="0" max="20000"></td>
+        <td style="width=50%"><label for="exp">Added Experience</label></td>
+        <td style="width=50%"><input name="exp" type="number" value="0" min="0" max="20000"></td>
       </tr>
     </table>
   </div>`;
