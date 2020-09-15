@@ -3,8 +3,8 @@
   //check players weath (total value of gear + credits) vs 11-5 table on page 391
 
   Usage :
-    1. Get Players : either target individual player tokens or the macro will assum any actor of the character type that is a PC
-    2. Money : macro will automatically tally the players wealth and check it vs the table 11-5 on page 391 of the CRB.
+    1. Get Players : either target individual player tokens or the macro will assume any actor of the character type that is a PC
+    2. Money : macro will automatically tally the player's wealth and check it vs the table 11-5 on page 391 of the CRB.
     3. Dispaly : macro will then display all gathered information into a ChatMessage (whispered to all GMs)
 */
 (()=>{

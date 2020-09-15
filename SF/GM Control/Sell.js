@@ -8,10 +8,10 @@
 
   Items sold and value associated will be displayed in the chat window when complete.
 */
+
 (async ()=>{
-  let macro_actor = character !== null ? character
-    : token !== undefined ? token.actor
-    : game.user.targets.size !== 0 ? Array.from(game.user.targets)[0].actor : null;
+  let macro_actor = game.user.targets.size !== 0 ? Array.from(game.user.targets)[0].actor
+    : token !== undefined ? token.actor : character;
 
   if(!macro_actor) return ui.notifications.error(`Actor Null.`);
 
@@ -155,7 +155,7 @@
       {
         let element = elements.find(e=>e.id===item.id);
 
-        if(element.value !== item.sold)
+        if(element.value !== undefined && element.value !== item.sold)
         {
           item.sold = element.value;
           let overallvalue = 0;
