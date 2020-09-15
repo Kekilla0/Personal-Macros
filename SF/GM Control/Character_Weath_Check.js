@@ -1,5 +1,3 @@
-
-
 /*
   This macros purpose is to automatically calculate expected character wealth, character wealth, and difference.
   //check players weath (total value of gear + credits) vs 11-5 table on page 391
