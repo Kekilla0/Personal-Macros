@@ -31,5 +31,5 @@
       }
     }
   });
-  dialog = new Dialog({title = `Macro Manager`,content, buttons}).render(true);
+  dialog = new Dialog({title : `Macro Manager`,content, buttons}).render(true);
 })();
