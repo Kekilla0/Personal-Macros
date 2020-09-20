@@ -1,8 +1,8 @@
 /*sorcerer point macro
  *Module Requirements : Furnace
  *Character Requirements : 	Must be a user with levels in "Sorcerer".
- *							Must have a feature with uses equal to sorcerer level named "Sorcery Points"
- *							Metamagic Feats must be named as they are in the Macro.
+ *				Must have a feature with uses equal to sorcerer level named "Sorcery Points"
+ *				Metamagic Feats must be named as they are in the Macro.
  */
 let outlog =(...args) => console.log("Sorcerer | ", ...args);
 let debug = false;
@@ -45,12 +45,12 @@ function Sorcerer_Dialog()
 		buttons : {
 			one : {
 				icon :`<i class="fas fa-check"></i>`,
-				label : "Continue",
+				lable : "Continue",
 				callback : () => confirmed = true
 			},
 			two : {
 				icon : `<i class="fas fa-times"></i>`,
-				label : "Cancel",
+				lable : "Cancel",
 				callback : () => confirmed = false
 			}
 		},
@@ -59,16 +59,24 @@ function Sorcerer_Dialog()
 			if(confirmed){
 				switch(html.find('[name=use]')[0].value){
 					case "sorcPoint" : 
-						spell_SorceryPoints();
+						game.dnd5e.rollItemMacro("Spell to Sorcery Points").then(()=>{
+							spell_SorceryPoints();
+						});
 						break;
 					case "spellSlot" :
-						sorceryPoints_spell();
+						game.dnd5e.rollItemMacro("Sorcery Points to Spell").then(()=>{
+							sorceryPoints_spell();
+						});
 						break;
 					case "extend" :
-						metaMagic_Extended();
+						game.dnd5e.rollItemMacro("Metamagic: Extended Spell").then(()=>{
+							metaMagic_Extended();
+						});
 						break;
 					case "twin" :
-						metaMagic_Twinned();
+						game.dnd5e.rollItemMacro("Metamagic: Twinned Spell").then(()=>{
+							metaMagic_Twinned();
+						});						
 						break;
 				}
 			}
