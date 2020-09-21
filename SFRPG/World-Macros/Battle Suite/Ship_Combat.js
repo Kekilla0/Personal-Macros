@@ -395,14 +395,12 @@ let player_SS, player_SS_tier, player, target_SS_tier;
       }]);
     }
   });
-  
-  console.log(player, player_SS);
 
   button_dialog(battle_stations);
 })();
 
 /*
-  Base Method in use.
+  Base Methods in use.
 */
 async function button_dialog(data)
 {
