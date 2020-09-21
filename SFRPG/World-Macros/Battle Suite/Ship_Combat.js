@@ -242,8 +242,8 @@ async function gunner_check(dc, message)
 async function reduce_resolve(point = 1)
 {
   let {min, max, value} = character.data.data.attributes.rp;
-  if(value === min) return ChatMessage.create({content : `${character.name} does not have enough resolve points to complete action.`});
-  character.update({ "data.attributes.rp.value" : Math.clamped(value - 1, min, max)});
+  if((value - point) <  min) return ChatMessage.create({content : `${character.name} does not have enough resolve points to complete action.`});
+  character.update({ "data.attributes.rp.value" : Math.clamped(value - point, min, max)});
 }
 
 button_dialog(battle_stations);
