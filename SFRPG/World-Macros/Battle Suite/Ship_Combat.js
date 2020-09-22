@@ -92,7 +92,7 @@ const engineer_actions = {
       let choice1 = await choose(["Life Support", "Sensors", "Weapons Array", "Engines", "Power Core"], `Choose system to patch : `);
       let choice2 = await choose([[10,"Glitching"], [15,"Malfunctioning"], [20,"Wrecked"]], `Choose system to patch : `);
       let cont = `You can patch the ${choice1} system to reduce the effects of a critical damage condition. The number of actions and the DC of the Engineering check required to patch a system depend on how badly the system is damaged, as indicated on the table on page 324. Multiple engineers can pool their actions in a single round to effect repairs more quickly, but each engineer must succeed at her Engineering check to contribute her action to the patch. The number of actions required can be reduced by 1 (to a minimum of 1 action) by increasing the DC by 5. If you succeed at this check, the severity of the critical damage is unchanged, but it is treated as one step less severe for the remainder of the combat, until 1 hour has passed, or until the system takes critical damage again (which removes the patch and applies the new severity). This action can be taken more than once per round, and this check is not modified by any critical damage to the core.`;
-      let dc = choice2 + (1.5 * player_SS_tier);
+      let dc = parseInt(choice2) + (1.5 * player_SS_tier);
       await roll_check(`eng`, dc, cont); 
       button_dialog(battle_stations);
     }],
@@ -246,6 +246,8 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     ? game.actors.filter(actor => !actor.isPC && actor.data.type === `character`)
     : game.actors.filter(actor => actor.owner && actor.data.type === `character`);
   
+  console.log(choices);
+  
   if(choices.length !== 1)
   {
     let choice = await choose(choices.map(actor => [actor.id, actor.name]), `Choose Crew Member : `);
@@ -253,6 +255,8 @@ let player_SS, player_SS_tier, player, target_SS_tier;
   }else{
     player = choices[0];
   }
+
+  console.log(player, player_SS);
 
   /*
     Add actions based on the characters level & class ranks
@@ -391,7 +395,13 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     if(item.type === `starshipWeapon`)
     {
       ship_guns.buttons.push([`${item.name} - ${item.data.data.mount.arc}`, async () => {
+        let bab = player.data.data.attributes.bab > player.data.data.skills.pil.ranks ? player.data.data.attributes.bab : player.data.data.skills.pil.ranks;
+        let stat = player.data.data.abilities.dex.mod;
+
+        item.data.data.data = { attackBonus : (bab + stat) };
+
         item.roll();
+        item.rollAttack({event});
       }]);
     }
   });
@@ -437,6 +447,7 @@ async function choose(options = [], prompt = ``)
 }
 async function display(content)
 {
+  //maybe add to this to allow for title/flavor
   ChatMessage.create({content, speaker : { actor : player }});
 }
 async function reduce_resolve(point = 1)
@@ -451,16 +462,19 @@ async function reduce_resolve(point = 1)
 */
 async function roll_check(type, dc, message)
 {
+  display(message);
   player.rollSkill(type, {event});
 
   Hooks.once(`preCreateChatMessage`, (data, options, id) =>{
     let rollData = JSON.parse(data.roll);
+    data.flavor += ` DC : ${dc}`;
+    /*
     if(rollData.total >= Math.floor(dc))
     {
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Success! </b></span></div>`;
     }else{
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Failure! </b></span></div>`;
-    }
+    }*/
   });
 }
 async function gunner_check(dc, message)
@@ -470,12 +484,13 @@ async function gunner_check(dc, message)
 
   Hooks.once(`preCreateChatMessage`, (data, options, id) =>{
     let rollData = JSON.parse(data.roll);
-    if(rollData.total >= Math.floor(dc))
+    data.flavor += ` DC : ${dc}`;
+    /*if(rollData.total >= Math.floor(dc))
     {
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Success! </b></span></div>`;
     }else{
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Failure! </b></span></div>`;
-    }
+    }*/
   });
 
   roll.toMessage();
