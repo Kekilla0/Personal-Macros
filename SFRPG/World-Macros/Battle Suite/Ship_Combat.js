@@ -3,13 +3,15 @@
 
   Requirements : 
     Player has a selected character
-    Targetting is required as necessary
-    Only will work with 1 SS being controlled by the player
+    Targetting is required as necessary (specific skills will return out if there is no target.)
 
   How to Use : 
     fire up the macro
+    if you are the GM or you own more than 1 character/starship it will ask you two questions before going into the loop
+      What ship are you? -- this will set up the tier, very important for most of the DCs
+      Who is your captain? --- this will be the actor that will be providing all of your skill checks, important if you want to automate most of the process.
     choose your role
-    when its your phase --- chose your action
+    when its your phase --- chose your action (for GMs understand there will be quite a bit of clicking back and forth.)
 
   How to Edit/Change :
     most of the entries should be complete with function helpers
@@ -18,9 +20,7 @@
     each ()=> is a function call that should follow the basic structure of the action
 
   To Do : 
-    Fix GM use
     Add additional book information
-    when doing something more than once --- force more than once instead of looping.
 */
 
 /*
@@ -246,7 +246,6 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     ? game.actors.filter(actor => !actor.isPC && actor.data.type === `character`)
     : game.actors.filter(actor => actor.owner && actor.data.type === `character`);
   
-  console.log(choices);
   
   if(choices.length !== 1)
   {
