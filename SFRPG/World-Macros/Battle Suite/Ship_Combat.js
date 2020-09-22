@@ -31,7 +31,7 @@ const battle_stations = {
     ["Captain", ()=> { button_dialog(captain_actions); } ],
     ["Engineer", ()=> { button_dialog(engineer_actions); } ],
     ["Gunner", () => { button_dialog(gunner_actions); } ],
-    ["Pilot", () => { button_dialog(pilot_actions); } ],
+    ["Pilot", async () => { await initiative_roll(); await button_dialog(pilot_actions); } ],
     ["Science Officer", ()=> { button_dialog (science_actions); }]
   ],
   content : `<div sytle="width:100%; text-align:center;><h2>Choose a Station : </h2></div>`,
@@ -256,8 +256,6 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     player = choices[0];
   }
 
-  console.log(player, player_SS);
-
   /*
     Add actions based on the characters level & class ranks
   */
@@ -397,6 +395,8 @@ let player_SS, player_SS_tier, player, target_SS_tier;
       ship_guns.buttons.push([`${item.name} - ${item.data.data.mount.arc}`, async () => {
         let bab = player.data.data.attributes.bab > player.data.data.skills.pil.ranks ? player.data.data.attributes.bab : player.data.data.skills.pil.ranks;
         let stat = player.data.data.abilities.dex.mod;
+        
+        //make global to hit modifier for ship_guns?
 
         item.data.data.data = { attackBonus : (bab + stat) };
 
@@ -495,4 +495,28 @@ async function gunner_check(dc, message)
 
   roll.toMessage();
 }
+async function initiative_roll()
+{
+  let value = await new Promise((resolve) => {
+    new Dialog({
+      title : `Helm Phase Initiative Roll`,
+      content : `Wait to roll Initative until Helm Phase`,
+      buttons : { cont : { label : `Continue`, callback : () => {
+        player.rollSkill(`pil`, {event});
 
+        Hooks.once(`preCreateChatMessage`, (data, options, id) => {
+          let rollData = JSON.parse(data.roll);
+          data.flavor = `Helm Phase Initiative Roll`;
+
+          /*
+          let combat = duplicate(game.combats.active);
+          combat.combatants.find(i=>i.actor.name === player_SS.name).initative = rollData.total;
+          game.combats.active.update(combat);
+          */
+
+          resolve(true);
+        });
+      }}}
+    }).render(true);
+  });
+}

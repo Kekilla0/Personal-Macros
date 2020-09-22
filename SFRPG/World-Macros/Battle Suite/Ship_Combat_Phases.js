@@ -3,9 +3,7 @@
   let phase = await scene.getFlag(`world`, `phase`);
   let turn = await scene.getFlag(`world`, `turn`);
 
-  console.log(phase, turn);
-
-  if(!phase && !turn )  { phase = `Open`; turn = 0; new Macro({ command : `/narrate Turn : ${turn} -  ${phase} Phase!`, type : `chat` }).execute(); }
+  if(!phase && !turn )  { phase = `Open`; turn = 0; }
   else {
     switch(phase)
     {
@@ -26,8 +24,9 @@
         turn = parseInt(turn) + 1;
         break;
     }
-    new Macro({ command : `/narrate Turn : ${turn} -  ${phase} Phase!`, type : `chat` }).execute();
   }
+
+  Narrator.createSpecialChatMessage("narrate", `Turn : ${turn} -  ${phase} Phase!`); 
 
   scene.setFlag(`world`, `phase`, phase);
   scene.setFlag(`world`, `turn`, turn);
