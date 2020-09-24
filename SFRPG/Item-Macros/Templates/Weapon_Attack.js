@@ -47,7 +47,7 @@ const conceal_types = [[0, `No Concealment`], [20, `Normal Concealment`], [50, `
         item.rollDamage({event});
       }
     }else{
-      if(rollData.total >= (kac.value + parseInt(cover)) && ( concealment_roll >= parseInt(concealment)))
+      if(rollData.total >= (eac.value + parseInt(cover)) && ( concealment_roll >= parseInt(concealment)))
       {
         item.rollDamage({event});
       }

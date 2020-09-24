@@ -20,7 +20,8 @@
     each ()=> is a function call that should follow the basic structure of the action
 
   To Do : 
-    Add additional book information
+    Add additional book information.
+    Change how messages work (Header - Flavor - Content)
 */
 
 /*
@@ -40,7 +41,7 @@ const battle_stations = {
 const captain_actions = {
   buttons : [
     ["Demand (Any Phase)", async ()=> {
-      let dc = (15+(1.5*player_SS.data.data.details.tier));
+      let dc = (15+(1.5*player_SS_tier));
       let cont = "You can make a demand of a crew member to try to improve his performance. You grant a +4 bonus to one specific check by succeeding at an Intimidate check (DC = 15 + 1-1/2 times your starship’s tier). You must use this action before the associated check is rolled, and you can grant this bonus to an individual character only once per combat. Demand might result in negative consequences if used on NPCs, and you can’t make demands of yourself.";
       await roll_check("int", dc , cont);
       button_dialog(battle_stations);
@@ -58,7 +59,7 @@ const captain_actions = {
     }],
     ["Taunt (Any Phase, Push)", async ()=> {
       let cont = `You can use the communications system to broadcast a taunting message to the enemy vessel. You select an enemy vessel and a phase of combat (engineering, helm, or gunnery), and then attempt a Bluff or Intimidate check (DC = 15 + 1-1/2 times the enemy starship’s tier). If you are successful, each enemy character acting during the selected phase takes a –2 penalty to all checks for [[1d4]] rounds; the penalty increases to –4 if the enemy’s check is made as part of a push action. Once used against an enemy starship, regardless of the outcome, taunt can’t be used against that starship again during the same combat.`;
-      let dc = (15 + (1.5*player_SS.data.data.details.tier));
+      let dc = (15 + (1.5*player_SS_tier));
       let choice1 = await choose (["Bluff", "Intimidate"], "Choose Taunt skill option : ");
       if(choice1 === "Bluff")
       {
@@ -271,7 +272,7 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     case 12 :
       captain_actions.buttons.push(["Moving Speech (Any Phase)", async ()=>{
         let cont =`At 12th level, you can spend 1 Resolve Point and use your action to give a moving speech to the crew during one phase of combat with a successful Diplomacy check (DC = 15 + 1-1/2 times your starship’s tier). For the remainder of that phase, your allies can roll twice and take the better result when performing crew actions.`;
-        let dc = 15 + (1.5 * player_SS.data.data.details.tier);
+        let dc = 15 + (1.5 * player_SS_tier);
         reduce_resolve();
         await roll_check("dip", dc, cont);
         button_dialog(battle_stations);
@@ -323,7 +324,7 @@ let player_SS, player_SS_tier, player, target_SS_tier;
     case 6 :
       captain_actions.buttons.push(["Orders (Any Phase, Push)", async ()=> {
         let cont = `At 6th level, you can grant an additional action to one member of the crew by spending 1 Resolve Point and succeeding at a difficult skill check at the beginning of the phase in which the crew member would normally act. The type of check depends on the role of the crew member targeted: a Computers check for a science officer, an Engineering check for an engineer, a gunnery check (see page 320) for a gunner, and a Piloting check for a pilot. The DC of this check is equal to 10 + 1-1/2 times your starship’s tier. If the check succeeds, the crew member can take two actions in her role this round (both when she would normally act), but she can’t take the same action twice. You can’t give yourself orders.`;
-        let dc = (10 + (3*player_SS.data.data.details.tier))
+        let dc = (10 + (3*player_SS_tier))
         reduce_resolve();
         let choice1 = await choose([["com", "Science Officer"],["eng", "Engineer"],["pil", "Pilot"],["gun", "Gunner"],], `Choose Station to Help : `);
         if(choice1 === "gun"){
@@ -394,13 +395,12 @@ let player_SS, player_SS_tier, player, target_SS_tier;
       ship_guns.buttons.push([`${item.name} - ${item.data.data.mount.arc}`, async () => {
         let bab = player.data.data.attributes.bab > player.data.data.skills.pil.ranks ? player.data.data.attributes.bab : player.data.data.skills.pil.ranks;
         let stat = player.data.data.abilities.dex.mod;
-        
-        //make global to hit modifier for ship_guns?
 
         item.data.data.data = { attackBonus : (bab + stat) };
 
-        item.roll();
         item.rollAttack({event});
+
+        //add hook to check to see if the attack hit (add a choose for ac modifier?)
       }]);
     }
   });
@@ -444,10 +444,10 @@ async function choose(options = [], prompt = ``)
   });
   return value;
 }
-async function display(content)
+async function display(message)
 {
   //maybe add to this to allow for title/flavor
-  ChatMessage.create({content, speaker : { actor : player }});
+  ChatMessage.create({content : message, speaker : { actor : player }});
 }
 async function reduce_resolve(point = 1)
 {
@@ -463,14 +463,16 @@ async function roll_check(type, dc, message)
 {
   display(message);
   player.rollSkill(type, {event});
+  dc = Math.floor(dc);
 
   Hooks.once(`preCreateChatMessage`, (data, options, id) =>{
     let rollData = JSON.parse(data.roll);
     data.flavor += ` DC : ${dc}`;
+    //data.content += `<hr><div style = "text-align:center;"><span>${message}</span></div>`;
     /*
     if(rollData.total >= Math.floor(dc))
     {
-      data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Success! </b></span></div>`;
+      data.content += `<hr><div style = "text-align:center;"><span>${message}</div>`;
     }else{
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Failure! </b></span></div>`;
     }*/
@@ -478,12 +480,15 @@ async function roll_check(type, dc, message)
 }
 async function gunner_check(dc, message)
 {
+  display(message);
   let bab = player.data.data.attributes.bab > player.data.data.skills.pil.ranks ? player.data.data.attributes.bab : player.data.data.skills.pil.ranks;
   let roll = new roll(`1d20 + ${bab} + ${player.data.data.abilities.dex.mod}`).roll();
+  dc = Math.floor(dc);
 
   Hooks.once(`preCreateChatMessage`, (data, options, id) =>{
     let rollData = JSON.parse(data.roll);
     data.flavor += ` DC : ${dc}`;
+    //data.content += `<hr><div style = "text-align:center;"><span>${message}</span></div>`;
     /*if(rollData.total >= Math.floor(dc))
     {
       data.content += `<hr><div style = "text-align:center;"><span>${message} <b> <br> DC : ${Math.floor(dc)}, Success! </b></span></div>`;
