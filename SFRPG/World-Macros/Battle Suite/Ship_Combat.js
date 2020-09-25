@@ -165,18 +165,6 @@ const magic_actions = {
       await roll_check(`mys`, dc, cont);
       button_dialog(battle_stations);
     }],
-    ["Mystic Haze (Engineering Phase, Push)", async ()=> {
-      let cont = `If you have at least 6 ranks in Mysticism, you can spend 1 Resolve Point and attempt a Mysticism check (DC = 20 + 1-1/2 × your starship’s tier); if you succeed, you call forth a magical burst of static to block your enemy’s view. This obscuring field garbles your opponent’s sensors and hinders their ability to gain information about your ship’s defenses and positioning, providing your starship a +1 enhancement bonus to AC until the end of the next round. In addition, the increased interference means all science officers on the opposing starship taking the scan or lock on actions before the end of the next round must roll twice for their checks and use the worse result. `;
-      let dc = 20 + (1.5 * player_SS_tier);
-      await roll_check(`mys`, dc, cont); 
-      button_dialog(battle_stations);
-    }],
-    ["Psychic Currents (Engineering Phase)", async ()=> {
-      let cont = `If you have at least 12 ranks in Mysticism, you can spend 1 Resolve Point and attempt a Mysticism check (DC = 20 + 1-1/2 × your starship’s tier) to manipulate mysterious, invisible forces in the void of space, expanding and contracting the basic physics around your own vessel and altering how your starship can negotiate the confines of physical space-time. On a successful check, reduce your starship’s minimum distance between turns by 1 (to a minimum of 0) for that round.`;
-      let dc = 20 + (1.5 * player_SS_tier);
-      await roll_check(`mys`, dc, cont); 
-      button_dialog(battle_stations);
-    }],
   ],
   content : `<div sytle="width:100%; text-align:center;><h2>Choose a Magic Officer Action : </h2></div>`,
   title : `Magic Officer Action Manager`
@@ -355,6 +343,15 @@ let player_SS, player_SS_tier, player, target_SS_tier;
           button_dialog(battle_stations);
         }]);
       }
+      if(player.data.data.skills?.mys.ranks >= 12)
+      {
+        magic_actions.buttons.push(["Mystic Haze (Engineering Phase, Push)", async ()=> {
+          let cont = `If you have at least 6 ranks in Mysticism, you can spend 1 Resolve Point and attempt a Mysticism check (DC = 20 + 1-1/2 × your starship’s tier); if you succeed, you call forth a magical burst of static to block your enemy’s view. This obscuring field garbles your opponent’s sensors and hinders their ability to gain information about your ship’s defenses and positioning, providing your starship a +1 enhancement bonus to AC until the end of the next round. In addition, the increased interference means all science officers on the opposing starship taking the scan or lock on actions before the end of the next round must roll twice for their checks and use the worse result. `;
+          let dc = 20 + (1.5 * player_SS_tier);
+          await roll_check(`mys`, dc, cont); 
+          button_dialog(battle_stations);
+        }]);
+      }
     case 11 :
     case 10 :
     case 9 :
@@ -418,6 +415,15 @@ let player_SS, player_SS_tier, player, target_SS_tier;
           let cont = `If you have at least 6 ranks in Computers, you can lock your starship’s targeting system on to one enemy vessel. You must spend 1 Resolve Point and attempt a Computers check. The DC equals 5 + 1-1/2 times the tier of the target starship + its bonus from defensive countermeasures (see page 298). If you succeed, your starship’s gunners gain a +2 bonus to gunnery checks against the target for the rest of the round. This action can be taken only once per round.`;
           let dc = 5 + (1.5 * target.data.data.details.tier ); //add defensive countermeasure number here?
           await roll_check(`com`, dc, cont);
+          button_dialog(battle_stations);
+        }]);
+      }
+      if(player.data.data.skills?.mys.ranks >= 6)
+      {
+        magic_actions.buttons.push(["Psychic Currents (Engineering Phase)", async ()=> {
+          let cont = `If you have at least 12 ranks in Mysticism, you can spend 1 Resolve Point and attempt a Mysticism check (DC = 20 + 1-1/2 × your starship’s tier) to manipulate mysterious, invisible forces in the void of space, expanding and contracting the basic physics around your own vessel and altering how your starship can negotiate the confines of physical space-time. On a successful check, reduce your starship’s minimum distance between turns by 1 (to a minimum of 0) for that round.`;
+          let dc = 20 + (1.5 * player_SS_tier);
+          await roll_check(`mys`, dc, cont); 
           button_dialog(battle_stations);
         }]);
       }
