@@ -16,7 +16,15 @@
       *If the player's experience gain takes them to the next level, a prompt will display. 
       *The experience gained will be displayed as a ChatMessage.
 */
+
 (() => {
+  /*
+    effect - overlay effect that the macro checks for
+    encounter_difficulty - table 11-1 on page 390 search by difficulty string, returns CR equivalency for encounter
+    cr_equivalencies - table 11-2 on page 390 search by # of creatures, returns CR change value.
+    experience_points_awards - table 11-3 on page 390 search by CR, returns experience value.
+    starship_difficulty - table ?? on page 326 search by difficulty, returns Enemy Starship Tier
+  */
   const effect = `icons/svg/skull.svg`;
   const Encounter_Difficulty = {"Easy" : -1,"Average" : 0,"Challenging" : 1,"Hard" : 2,"Epic" : 3};
   const cr_equivalencies = {1 : 0, 2 : 2, 3 : 3, 4 : 4, 6 : 5, 8 : 6, 12 : 7, 16 : 8};
@@ -108,7 +116,6 @@
   }
   
   let content =`
-  <div class = "form-group">
     <table style="width: 100%; text-align:center; border: 1px solid black">
       <tr>
         <th colspan="2">${actors.map(actor=> `<img src=${actor.data.token.img} width="50" height="50">`).join(``)}</th>
@@ -121,8 +128,7 @@
         <td style="width=50%"><label for="exp">Add addtional Experience</label></td>
         <td style="width=50%"><input name="exp" type="number" value="0" min="0" max="2000000"></td>
       </tr>
-    </table>
-  </div>`;
+    </table>`;
 
   new Dialog({
     content, 
