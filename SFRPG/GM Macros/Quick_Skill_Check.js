@@ -1,5 +1,5 @@
 /*
-  Module Requirements --- Whisper Dialog
+  Module Requirements --- Whisper Dialog (comment out line 83 if you don't want to use Whisper Dialog)
 
   How to use : 
     click macro (do not select or target if you want it to be every PC)
@@ -7,7 +7,9 @@
     select specific
     input data for success
     input data for failure
-  
+
+  To do :
+    correct checks vs trained or not --- possibly allow roll and prompt for GM input?
 */
 
 const stats = Object.entries(CONFIG.SFRPG.abilities);
@@ -16,8 +18,6 @@ const skills = Object.entries(CONFIG.SFRPG.skills);
 const actors = (canvas.tokens.controlled.length !== 0) ? canvas.tokens.controlled.map(token=> token.actor) 
 : (game.user.targets.size !== 0) ? Array.from(game.user.targets).map(target=> target.actor) 
 : game.actors.filter(actor => actor.data.type === "character" && actor.isPC);
-
-console.log(actors);
 
 let value, success, failure, DC;
 
@@ -32,64 +32,47 @@ let user_success = [], user_failure = [];
   }else if (type === "Skill"){
     [ value, DC,  success, failure ] = await special_choice(skills, `Choose a skill to roll : `); 
   }else {
-    [ value, DC,  success, failure ] = await special_choice(skills, `Choose a save to roll : `);
+    [ value, DC,  success, failure ] = await special_choice(stats, `Choose a save to roll : `);
   }
 
-  let content = `<table> <tr> <th colspan=2>${type} - ${value} - ${DC}</th></tr>`;
+  let content = `
+    <table style="width:100%; text-align:center; border:1px solid black"> 
+      <tr> 
+        <th colspan=2 style="width:100%;">${type} - ${value} - ${DC}</th>
+      </tr>
+      ${actors
+        .map(actor => {
+          let actor_userID = game.users.find( user => user.character?.name === actor.name && user.active)?.id;
+          let mod = type === "Stat" ? actor.data.data.abilities[value].mod 
+            : type === "Skill" ? actor.data.data.skills[value].mod 
+            : type === "Save" ? actor.data.data.attributes[value].bonus : null;
 
-  for(let actor of actors)
-  {
-    let actor_userID = game.users.find( user => user.character?.name === actor.name && user.active)?.id;
-    let mod = type == "Stat" 
-      ? actor.data.data.abilities[value].mod : type == "Skill"
-      ? actor.data.data.skills[value].mod : type == "Save"
-      ? actor.data.data.attributes[value].bonus : null;
-    if(mod === null) continue;
-    
-    let roll = new Roll(`1d20 + ${mod}`).roll().total;
+          console.log(actor_userID, mod);
 
-    content += `<tr><td>${actor.name}</td><td>${roll}</td></tr>`;
+          if(mod === null || mod === undefined) return `<tr><td colspan=2 style="width=100%">${actor.name} ${type} ${value} failed.</td></tr>`;
 
-    if(!actor_userID) continue;
+          let roll = new Roll(`1d20 + ${mod}`).roll().total;
+          if(actor_userID)
+          {
+            if(roll < parseInt(DC))
+            {
+              user_failure.push(actor_userID);
+            }else{
+              user_success.push(actor_userID);
+            }
+          }
 
-    if(roll < parseInt(DC))
-    {
-      user_failure.push(actor_userID);
-    }else{
-      user_success.push(actor_userID);
-    }
-
-      
-    //need to make these invisible (maybe just get the stat or something?? idk)
-    /*
-      if(type == "Stat") actor.rollAbility(value, {event});
-      if(type == "Skill") actor.rollSkill(value, {event});
-      if(type == "Save") actor. rollSave(value, {event});
-
-      Hooks.once(`preCreateChatMessage`, async (data, options, userID) =>{
-        if(userID !== game.userId) {
-          console.log(`failure  in hook`, userID, game.userID);
-          resolve(false);
-          return;
-        }
-
-        let rollData = JSON.parse(data.roll);
-        data.flavor += ` DC : ${DC}`;
-
-        if(rollData.total < parseInt(DC))
-        {
-          user_failure.push(actor_userID);
-        }else{
-          user_success.push(actor_userID)
-        }
-        resolve(true);
-      })
-    */
-  
-  }
-  content += `</table>`;
+          return `
+          <tr>
+            <td style="width:50%;">${actor.name}</td>
+            <td style="width:50%; ${roll < parseInt(DC) ? `color:red;` : `color:green;`}"><b>${roll}</b></td>
+          </tr>`;
+      })}
+      </table>`;
 
   ChatMessage.create({content, whisper : ChatMessage.getWhisperRecipients("GM")});
+
+  console.log(user_success, user_failure);
 
   if(success.length !== 0 && user_success.length !== 0) send_data(user_success, success);
   if(failure.length !== 0 && user_failure.length !== 0) send_data(user_failure, failure);
@@ -125,11 +108,26 @@ async function special_choice(options = [], prompt = ``)
     let dialog_options = (options[0] instanceof Array)
       ? options.map(o => `<option value="${o[0]}">${o[1]}</option>`).join(``)
       : options.map(o => `<option value="${o}">${o}</option>`).join(``);
-  
-    let content = `${prompt} <select id="choice">${dialog_options}</select><br>
-      <label>DC : </label><input id="DC" type="number"></input><br>
-      <label>Success : </label><input id="success" type="text"></input><br>
-      <label>Failure : </label><input id="failure" type="text"></input>`;
+
+    let content = `
+    <table style="width:100%; text-align:center; border:1px solid black">
+      <tr>
+        <th style="width:50%;">${prompt}</th>
+        <th style="width:50%;"><select id="choice">${dialog_options}</select></th>
+      <tr>
+      <tr>
+        <td style="width:50%;">DC : </td>
+        <td style="width:50%;"><input id="DC" type="number"></input></td>
+      </tr>
+      <tr>
+        <td style="width:50%;">Success Text :</td>
+        <td style="width:50%;"><input id="success" type="text"></input></td>
+      </tr>
+      <tr>
+        <td style="width:50%;">Failure Text :</td>
+        <td style="width:50%;"><input id="failure" type="text"></input></td>
+      </tr>
+    </table>`;
 
     new Dialog({
         content, 
