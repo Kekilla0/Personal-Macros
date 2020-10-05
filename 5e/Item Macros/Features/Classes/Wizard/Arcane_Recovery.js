@@ -24,7 +24,7 @@
       buttons : {
         Ok : {
           label : `Ok`,
-          callback : (html) => {
+          callback : async (html) => {
             let values = Array.from(html.find(`input`));
             if( values.reduce((acc,cur) => acc += (cur.valueAsNumber * parseInt(cur.id.charAt(5))), 0) > cum_slot_rec ) return ui.notifications.error(`You selected too many cumulative spell slots!`);
 
@@ -36,8 +36,8 @@
               chat_output += `Spell Slot (${value.id.charAt(5)}) : Add ${value.valueAsNumber}, Total :  ${update_data.data.spells[value.id].value} <br>`;
             }
 
-            item.actor.update(update_data);
-            item.update({ "data.uses.value" : 0 });
+            await item.actor.update(update_data);
+            await item.update({ "data.uses.value" : 0 });
             
             ChatMessage.create({ content : chat_output, speaker : ChatMessage.getSpeaker() });
           }
