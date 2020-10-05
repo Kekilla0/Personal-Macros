@@ -14,8 +14,8 @@
   let content = `
     <form>
       <p>You can regain ${cum_slot_rec} cumulative spell slots.</p>
-      ${Object.entries(spells).filter(arr => arr[1].max > 0 && arr[1].value !== arr[1].max).map(([key, value], index) => {
-        return `<label for="${key}">Spell Slot Level ${index+1} [${value.value}/${value.max}]</label><input id="${key}" type="number" value="0" min="0" max="${value.max}"><br>`;
+      ${Object.entries(spells).filter(arr => arr[1].max > 0 && arr[1].value !== arr[1].max && parseInt(arr[0].charAt(5)) < 7).map(([key, value], index) => {
+        return `<label for="${key}">Spell Slot Level ${key.charAt(5)} [${value.value}/${value.max}]</label><input id="${key}" type="number" value="0" min="0" max="${value.max}"><br>`;
       })}
     </form>
   `;
