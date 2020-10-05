@@ -5,7 +5,7 @@
   let wizard_levels = item.actor.items.find(i=> i.name===`Wizard`)?.data.data.levels;
 
   if(!wizard_levels) return ui.notifications.error(`You have no Wizard levels!`);
-  if(item.data.data.uses.value === 0) return ui.notifications.error(`You have no uses of Arcane Recovery Left!`);
+  if(item.data.data.uses.value <= 0) return ui.notifications.error(`You have no uses of Arcane Recovery Left!`);
 
   let cum_slot_rec = Math.ceil(wizard_levels/2), {spells} = item.actor.data.data;
 
