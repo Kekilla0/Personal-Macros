@@ -109,7 +109,7 @@
   
     if(difficulty === undefined)
     {
-      difficulty = (enemy_ship_level-player_ship_level) > 1 ? "Epic" : Easy;
+      difficulty = (enemy_ship_level-player_ship_level) > 1 ? "Epic" : "Easy";
       ui.notifications.warn(`Difficulty Out of Bounds (${difficulty==="Epic" ? "High" : "Low"})`);
     }
     experience = experience_points_awards[Encounter_Difficulty[difficulty] + APL];
