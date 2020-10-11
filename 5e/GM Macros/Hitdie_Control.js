@@ -95,7 +95,7 @@ function add_hitDie(classItems,className,actor){
         default :  "Cancel",
         close : async (html) => {
             if(confirmed) {
-                let addHitDie = html.find('[name=num]')[0].value;
+                let addHitDie = parseInt(html.find('[name=num]')[0].value);
                 if(addHitDie > missingHitDie) return ui.notifications.warn(`Attempted to add too many hit die.`);
                 let classItemUpdate= {
                     _id: confirmed_Class._id,
@@ -118,7 +118,7 @@ function sub_hitDie(classItems,className,actor){
     let dialog_Content = `
         <p>Choose option.</p>
         <div class="form-group">
-        <label>Select # to Subract (Max : ${remainingHitDie})</label>
+        <label>Select # to Subtract (Max : ${remainingHitDie})</label>
         <input type="number" name="num"></input>
         </div>`;
     
@@ -140,7 +140,7 @@ function sub_hitDie(classItems,className,actor){
         default :  "Cancel",
         close : async (html) => {
             if(confirmed) {
-                let subHitDie = html.find('[name=num]')[0].value;
+                let subHitDie = parseInt(html.find('[name=num]')[0].value);
                 if(subHitDie > remainingHitDie) return ui.notifications.warn(`Attempted to remove too many hit die.`);
                 let classItemUpdate= {
                     _id: confirmed_Class._id,
@@ -185,7 +185,7 @@ function use_hitDie(classItems,className,actor){
         default :  "Cancel",
         close : async (html) => {
             if(confirmed) {
-                let useHitDie = html.find('[name=num]')[0].value;
+                let useHitDie = parseInt(html.find('[name=num]')[0].value);
                 if(useHitDie > remainingHitDie) return ui.notifications.warn(`Attempted to use too many hit die.`);
                 let hitDieRoll = new Roll(`${useHitDie}${confirmed_Class.data.hitDice} + (${useHitDie}*${actor.data.data.abilities.con.mod})`).roll();
                 let hpObj = actor.data.data.attributes.hp;
