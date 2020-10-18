@@ -83,6 +83,8 @@ let user_success = [], user_failure = [];
             <td style="width:50%; ${roll < parseInt(DC) ? `color:red;` : `color:green;`}"><b>${roll}</b></td>
           </tr>`;
       })}
+      ${!success ? `` : `<tr><td colspan=2 style="width:100%">Success : ${success}</td></tr>`}
+      ${!failure ? `` : `<tr><td colspan=2 style="width:100%">Failure : ${failure}</td></tr>`}
       </table>`;
 
   ChatMessage.create({content, whisper : ChatMessage.getWhisperRecipients("GM")});
