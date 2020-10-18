@@ -1,6 +1,13 @@
 /*
   Module Requirements --- Whisper Dialog (comment out line 83 if you don't want to use Whisper Dialog)
 
+  Macro can be used with furnace and arguments
+    args[0] - type of check (Stat, Skill, Save)
+    args[1] - further specification of check
+    args[2] - DC of check
+    args[3] - success text
+    args[4] - failure text
+
   How to use : 
     click macro (do not select or target if you want it to be every PC)
     select type
@@ -24,15 +31,23 @@ let value, success, failure, DC;
 let user_success = [], user_failure = [];
 
 (async ()=> {
-  let type = await choose(["Stat","Skill", "Save"], `Choose roll type : `);
 
-  if(type === "Stat")
-  {
-    [ value, DC,  success, failure ] = await special_choice(stats, `Choose a stat to roll : `);
-  }else if (type === "Skill"){
-    [ value, DC,  success, failure ] = await special_choice(skills, `Choose a skill to roll : `); 
-  }else {
-    [ value, DC,  success, failure ] = await special_choice(stats, `Choose a save to roll : `);
+  let type = !args[0] ? await choose(["Stat","Skill", "Save"], `Choose roll type : `) : args[0];
+
+  if(!args[1] && !args[2]) {
+    if(type === "Stat")
+    {
+      [ value, DC,  success, failure ] = await special_choice(stats, `Choose a stat to roll : `);
+    }else if (type === "Skill"){
+      [ value, DC,  success, failure ] = await special_choice(skills, `Choose a skill to roll : `); 
+    }else {
+      [ value, DC,  success, failure ] = await special_choice(stats, `Choose a save to roll : `);
+    }
+  }else{
+    value = args[1];
+    DC = args[2];
+    success = args[3];
+    failure = args[4];
   }
 
   let content = `

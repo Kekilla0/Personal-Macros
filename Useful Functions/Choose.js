@@ -6,7 +6,11 @@ async function choose(options = [], prompt = ``)
       ? options.map(o => `<option value="${o[0]}">${o[1]}</option>`).join(``)
       : options.map(o => `<option value="${o}">${o}</option>`).join(``);
   
-    let content = `${prompt}<br><select id="choice">${dialog_options}</select>`;
+    let content = `
+    <table style="width=100%">
+      <tr><th>${prompt}</th></tr>
+      <tr><td><select id="choice">${dialog_options}</select></td></tr>
+    </table>`;
   
     new Dialog({
       content, 
