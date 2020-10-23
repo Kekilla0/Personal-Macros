@@ -1,4 +1,6 @@
-const default_actor_ids = [];
+const default_actor_ids = game.users
+  .filter(user => user.character)
+  .map(user => user.character.id);
 
 const actors = (canvas.tokens.controlled.length !== 0) ? canvas.tokens.controlled.map(token=> token.actor) 
   : (game.user.targets.size !== 0) ? Array.from(game.user.targets).map(target=> target.actor) 

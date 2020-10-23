@@ -44,6 +44,7 @@ let suprised = [];
   await add_to_combat();
   await roll_iniative();
   await game.combats.active.startCombat();
+  await ui.combat.createPopout().render(true);
   await build_combat_control();
 })();
 
