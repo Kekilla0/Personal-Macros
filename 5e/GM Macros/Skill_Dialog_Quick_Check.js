@@ -32,9 +32,10 @@ let type = ``, value = ``, dc = 0, success = ``, failure = ``, user_success = []
 
 (async()=>{
   type = !args[0] ? await choose([`Stat`, `Save`, `Skill`], `Choose type : `) : args[0];
+
   if(!args[1] || !args[2])
   {
-    if(type === `Stat` || `Save`)
+    if(type === `Stat` || type === `Save`)
     {
       [value, dc, success, failure] = await special_choice(abilities, `Choose a ${type} to roll : `);
     }
