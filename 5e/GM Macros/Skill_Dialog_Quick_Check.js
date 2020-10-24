@@ -1,11 +1,12 @@
 /*
-  Module Requirements --- Whisper Dialog (comment out line 83 if you don't want to use Whisper Dialog)
   Macro can be used with furnace and arguments
     args[0] - type of check (Stat, Skill, Save)
     args[1] - further specification of check
     args[2] - DC of check
     args[3] - success text
     args[4] - failure text
+  Macro can be used with whisper dialog 
+    If not installed or active --- will skip that portion of the macro
   How to use : 
     click macro (do not select or target if you want it to be every PC)
     select type
@@ -48,7 +49,7 @@ let type = ``, value = ``, dc = 0, success = ``, failure = ``, user_success = []
   let content = `
     <table style="width:100%; text-align:center; border:1px solid black"> 
     <tr> 
-      <th colspan=2 style="width:100%;">${type} - ${value} - ${DC}</th>
+      <th colspan=2 style="width:100%;">${type} - ${value} - ${dc}</th>
     </tr>
     ${actors
       .map(actor => {
@@ -62,7 +63,7 @@ let type = ``, value = ``, dc = 0, success = ``, failure = ``, user_success = []
         let roll = new Roll(`1d20 + ${mod}`).roll().total;
         if(actor_userID)
         {
-          if(roll < parseInt(DC))
+          if(roll < parseInt(dc))
           {
             user_failure.push(actor_userID);
           }else{
@@ -72,7 +73,7 @@ let type = ``, value = ``, dc = 0, success = ``, failure = ``, user_success = []
         return `
         <tr>
           <td style="width:50%;">${actor.name}</td>
-          <td style="width:50%; ${roll < parseInt(DC) ? `color:red;` : `color:green;`}"><b>${roll}</b></td>
+          <td style="width:50%; ${roll < parseInt(dc) ? `color:red;` : `color:green;`}"><b>${roll}</b></td>
         </tr>`;
     }).join(``)}
     ${!success ? `` : `<tr><td colspan=2 style="width:100%">Success : ${success}</td></tr>`}
@@ -150,5 +151,7 @@ async function special_choice(options = [], prompt = ``)
 
 function send_data (ids, message)
 {
+  if(!game.modules.get("whisper-dialog")?.active) return;
+
   WhisperDialog.newDialog({ content : message, whisper : ids, skipDialog : true});
 }
