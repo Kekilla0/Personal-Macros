@@ -63,8 +63,6 @@ async function check(){
     type : parseInt(await choose(vanta, `Choose roll type : `))
   };
 
-  console.log(data);
-
   let check_roll = await roll(data);
   display(check_roll,ChatMessage.getSpeaker({actor : actor_use}), `${actor_use.name} makes a ${check_stat} check!`);
 }
