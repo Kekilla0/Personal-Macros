@@ -83,8 +83,8 @@ let type = ``, value = ``, dc = 0, success = ``, failure = ``, user_success = []
   
   ChatMessage.create({content, whisper : ChatMessage.getWhisperRecipients("GM")});
 
-  if(success.length !== 0 && user_success.length !== 0) send_data(user_success, success);
-  if(failure.length !== 0 && user_failure.length !== 0) send_data(user_failure, failure);
+  if(success.length === 0 && user_success.length !== 0) send_data(user_success, success);
+  if(failure.length === 0 && user_failure.length !== 0) send_data(user_failure, failure);
 })();
 
 async function choose(options = [], prompt = ``)

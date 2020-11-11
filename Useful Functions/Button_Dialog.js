@@ -1,3 +1,11 @@
+/*
+  data = {
+    buttons : [[`Label`, ()=>{Callback} ], ...]
+    title : `title_label`,
+    content : `Html_Content`
+  }
+*/
+
 async function button_dialog(data)
 {
   let value = await new Promise((resolve) => {

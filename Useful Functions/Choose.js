@@ -1,3 +1,9 @@
+/*
+  //drop down stuff
+  options = [`display_return_value`, ...] or [[return_value , `display`],...],
+  prompt = `display_prompt_question` 
+*/
+
 async function choose(options = [], prompt = ``)
 {
   let value = await new Promise((resolve) => {
