@@ -16,3 +16,35 @@ async function input(type, prompt)
   });
   return value;
 }
+
+/*
+  data = [[`Label`, `Type`], ...]
+*/
+async function multi_input({title = ``, data = []} = {})
+{
+  let value = await new Promise((resolve)=> {
+    new Dialog({
+      title,       
+      buttons : {
+        Ok : { 
+          label : `Ok`, 
+          callback : (html) => { 
+            let html_values = html.find("input"); 
+            resolve(data.map((e,i) => e[1] == "number" ? html_values[i].valueAsNumber : html_values[i].value));
+          }
+        }
+      },
+      content : `<table style="width:100%">${data.map((input, index) => {
+        return `<tr>
+                  <th style="width:50%">
+                    <label>${input[0]}</label>
+                  </th>
+                  <td style="width:50%">
+                    <input type="${input[1]}" name="${index}"/>
+                  </td>
+                </tr>`;
+        }).join(``)}</table>`
+    }).render(true);
+  });
+  return value;
+} 
