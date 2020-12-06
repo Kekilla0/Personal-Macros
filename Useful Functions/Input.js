@@ -30,7 +30,9 @@ async function multi_input({title = ``, data = []} = {})
           label : `Ok`, 
           callback : (html) => { 
             let html_values = html.find("input"); 
-            resolve(data.map((e,i) => e[1] == "number" ? html_values[i].valueAsNumber : html_values[i].value));
+            resolve(
+              data.map((e,i) => e[1] == "number" ? html_values[i].valueAsNumber : e[1] == "checkox" ? html_values[i].checked : html_values[i].value)
+            );
           }
         }
       },
