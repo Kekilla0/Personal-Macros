@@ -26,18 +26,17 @@ const build_characteristics = false;
     Add total Gold
     Roll Random Characteristics of the Shop/Shopkeep
   */
-  let random_characteristics = [];
+  let rand_char = [];
 
-  Array(new Roll(`1d8+1`).roll().total).fill(0).forEach(async (r,i)=>{
-
+  rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i)=>{
     if(!build_characteristics) return;
 
     if(i === 0)
     {
-      random_characteristics.push(`<tr><td style="width:10%">Race : </td><td style="width:75%">${(await getTableResult({name : `race`})).text}</td></tr>`)
+      return `<tr><td style="width:10%">Race : </td><td style="width:75%">${(await getTableResult({name : `race`})).text}</td></tr>`
     }else{
-      let {name, text} = await getTableResult({name : `random`});
-      random_characteristics.push(`<tr><td style="width:10%">${name.charAt(0).toUpperCase() + name.slice(1)} : </td><td style="width:75%">${text}</td></tr>`);
+      let {name, text} = getTableResult({name : `random`});
+      return `<tr><td style="width:10%">${name.charAt(0).toUpperCase() + name.slice(1)} : </td><td style="width:75%">${text}</td></tr>`
     }
   });
 
@@ -114,7 +113,7 @@ async function qDialog({data, title = `Quick Dialog`} = {})
   return value;
 }
 
-async function getTableResult({name  = ``} = {})
+function getTableResult({name  = ``} = {})
 {
   const tableNames = {
     eyes : `d20 Eyes: The person has...`,
@@ -141,11 +140,9 @@ async function getTableResult({name  = ``} = {})
 
   if(name === `random`) name = Object.keys(tableNames)[new Roll (`1d19-1`).roll().total];
 
-  let { results } = await game.tables.getName(tableNames[name]).draw({displayChat : false});
+  let {text} = game.tables.getName(tableNames[name]).roll().results[0];
 
-  console.log(name, " : " ,results[0].text);
-
-  return { name, text : results[0].text };
+  return { name, text };
 }
 
 async function wait(ms) {
