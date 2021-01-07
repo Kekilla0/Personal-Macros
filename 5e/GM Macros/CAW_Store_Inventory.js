@@ -1,4 +1,4 @@
-const build_characteristics = false;
+const build_char = true;
 
 (async ()=>{
   let [type, size] = await qDialog({
@@ -29,22 +29,23 @@ const build_characteristics = false;
   let rand_char = [];
 
   rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i)=>{
-    if(!build_characteristics) return;
+    if(!build_char) return;
 
     if(i === 0)
     {
-      return `<tr><td style="width:10%">Race : </td><td style="width:75%">${(await getTableResult({name : `race`})).text}</td></tr>`
+      let {name, text} = getTableResult({name : `race`});
+      return `<tr><td style="width:10%">${name.charAt(0).toUpperCase() + name.slice(1)} : </td><td style="width:75%">${text}</td></tr>`;
     }else{
       let {name, text} = getTableResult({name : `random`});
-      return `<tr><td style="width:10%">${name.charAt(0).toUpperCase() + name.slice(1)} : </td><td style="width:75%">${text}</td></tr>`
+      return `<tr><td style="width:10%">${name.charAt(0).toUpperCase() + name.slice(1)} : </td><td style="width:75%">${text}</td></tr>`;
     }
   });
 
-  await wait(10*random_characteristics.length);
+  await wait(10*rand_char.length);
 
   let content = `
   ${
-    build_characteristics ? `<table>${random_characteristics.join(``)}</table>` : ``
+    build_char ? `<table>${rand_char.join(``)}</table>` : ``
   }
   <table>
     <tr>

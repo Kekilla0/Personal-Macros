@@ -7,7 +7,7 @@
   }
 */
 
-async function quick_dialog({data, title = `Quick Dialog`} = {})
+async function quickDialog({data, title = `Quick Dialog`} = {})
 {
   data = data instanceof Array ? data : [data];
 
