@@ -46,3 +46,50 @@ function mergeRoll(roll_a = new Roll(``), roll_b = new Roll(``))
   
   return output_roll;
 }
+
+/*
+  Rolls a single dice w/ # of Sides ${d} and ensures its value is greater than ${r}
+*/
+function roll(d,r)
+{
+  let roll = new Roll(`1d${d}`).roll();
+  if(roll.total < r)
+  {
+    roll = this.roll(d,r);
+  }
+  return roll;
+}
+
+/*
+  Sorts an Array of Rolls and Keeps a # of Rolls ${n}
+*/
+function keep(arr, n)
+{
+  return arr
+    .sort((a,b) => b.total-a.total)
+    .map((v,i)=> (i > (n-1)) ? null : v)
+    .filter(v => v !== null)
+}
+
+/*
+  Combines an Array of Rolls
+*/
+function combine(arr)
+{
+  return arr.reduce((acc, val, ind)=>{
+    if(ind === 0)
+    {
+      return val;
+    }else{
+      let returnVal = new Roll(`${acc._formula} + ${val._formula}`);
+
+      returnVal.data = {};
+      returnVal.results = [...acc.results,`+`, ...val.results];
+      returnVal.terms = [...acc.terms,`+`,...val.terms];
+      returnVal._rolled = true;
+      returnVal._total = acc._total + val._total;
+
+      return returnVal;
+    }
+  });
+}
