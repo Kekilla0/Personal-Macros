@@ -6,5 +6,6 @@
 function toggleJournal({ name })
 {
   let journal = game.journal.getName(name);
-  return journal.sheet.rendered ? journal.sheet.close() : journal.sheet.render(true);
+  journal.sheet.rendered ? journal.sheet.close() : journal.sheet.render(true);
+  return journal;
 }
