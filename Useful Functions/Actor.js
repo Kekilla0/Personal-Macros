@@ -14,3 +14,19 @@ function createCharacter({ user })
   let actor = await Actor.create(data);
   await user.update({ character : actor.id });
 }
+/*
+  Create Linked Actor From Token
+*/
+async function linkToken({ token })
+{
+  if(!token || token.data.actorLink || token.data.actorData === {}) return;
+
+  let {actorData} = duplicate(token.data);
+  let baseActor = game.actors.get(token.data.actorId), newActor = await Actor.create(baseActor.data);
+
+  await newActor.update({
+    "name" : newActor.data.name + "--NEW",
+    "token.actorLink" : true,
+    ...actorData
+  });
+}

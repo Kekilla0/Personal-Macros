@@ -31,3 +31,15 @@ async function sheetChange({ actor, sheetName }={})
   return await actor.setFlag(`core`,`sheetClass`, sheetName);
 }
 
+/*
+  Get Flags
+    accepts an entity and a scope
+    returns all flags in that scope
+*/
+function getFlags(entity, scope)
+{
+  const scopes = SetupConfiguration.getPackageScopes();
+  if(!scopes.includes(scope)) throw new Error(`Invalid scope`);
+  return getProperty(entity.data.flags, scope);
+}
+
