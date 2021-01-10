@@ -1,5 +1,6 @@
 /*
   Update to Streaming
+    requires the name of the playlist you want to enable all sounds to be set as "streaming"
 */
 async function enableStreaming({ name })
 {
@@ -17,5 +18,5 @@ async function enableStreaming({ name })
       }
     });
 
-  await Playlist.update(updates);
+  return await Playlist.update(updates);
 }

@@ -17,3 +17,18 @@ function tokenDistance(token1, token2)
     return distance;
   }
 }
+
+/*
+  Will Maximize the Health of an Unlinked Token.
+*/
+async function maximizeHealth(token)
+{
+  if(!token || !token.actor.data.data.attributes.hp?.formula ) return null;
+
+  let { hp } = duplicate(token.actor.data.data.attributes);
+
+  hp.value = hp.max = new Roll(hp.formula).evaluate({ maximize : true }).total;
+
+  return (token.actor.data.data.attributes.hp.value === hp.max) 
+    ? token : await token.actor.update({ "data.attributes.hp" : hp });
+}
