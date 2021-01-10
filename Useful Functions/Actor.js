@@ -30,3 +30,31 @@ async function linkToken({ token })
     ...actorData
   });
 }
+
+/*
+  Apply Damage (w/ resistances, immunities, & vulnerabilities)
+*/
+async function applyDamage({ actor , damage } = {})
+{
+  if(!actor || !damage) return;
+  let {di,dr,dv} = actor.data.data.traits;
+
+  if(arrInclude(di,damage.type))
+  {
+    return actor;
+  }
+  if(arrInclude(dr,damage.type))
+  {
+    return await actor.applyDamage(damage.value, 0.5)
+  }
+  if(arrInclude(dv, damage.type))
+  {
+    return await actor.applyDamage(damage.value, 2);
+  }
+  return await actor.applyDamage(damage.value);
+
+  function arrInclude(obj, val)
+  {
+    return [...obj.value, ...obj.custom.split(`;`)].includes(val);
+  }
+}
