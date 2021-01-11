@@ -7,7 +7,7 @@ async function sendMessage({ content, whisper = ChatMessage.getWhisperRecipients
 }
 
 /*
-  Two Roll to Message
+  Two Roll toMessage
 */
 async function doubleRoll({ rolls , title = ``, img = ``})
 {
@@ -22,19 +22,19 @@ async function doubleRoll({ rolls , title = ``, img = ``})
     </div>
     <hr>
     <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1">
-      <span style="flex:1; background:rgba(0, 0, 0, 0.1);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 8px 0px 8px 0px;">
+      <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 16px; text-align:center; padding: 2px 0px 2px 0px;">
         ${a._formula}
       </span>
-      <span style="flex:1; background:rgba(0, 0, 0, 0.1);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 8px 0px 8px 0px;">
+      <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 16px; text-align:center; padding: 2px 0px 2px 0px;">
         ${b._formula}
       </span>
     </div>
-    <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1">
-      <span style="flex:1; background:rgba(0, 0, 0, 0.1);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 8px 0px 8px 0px;">
-        ${a.total}
+    <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1; padding: 4px 0px 0px 0px">
+      <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 2px 0px 2px 0px;">
+        <b>${a.total}</b>
       </span>
-      <span style="flex:1; background:rgba(0, 0, 0, 0.1);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 8px 0px 8px 0px;">
-        ${b.total}
+      <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 2px 0px 2px 0px;">
+        <b>${b.total}</b>
       </span>
     </div>`;
 
