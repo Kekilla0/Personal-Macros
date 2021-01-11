@@ -14,6 +14,7 @@ function createCharacter({ user })
   let actor = await Actor.create(data);
   await user.update({ character : actor.id });
 }
+
 /*
   Create Linked Actor From Token
 */
@@ -51,3 +52,25 @@ async function applyDamage({ actor , type, value } = {})
     return [...obj.value, ...obj.custom.split(`;`)].includes(val);
   }
 }
+
+/*
+  Edit/Consume Resource
+*/
+async function editResource({ actor, name = ``, value = 1 })
+{
+  if(!actor) return new Error(`Actor Undefined`);
+  let { resources } = actor.data.data;
+  
+  let [key, object] = Object.entries(resources).find(([key, object])=> key === name || object.label === name);
+  if(!key || !object) return new Error(`Resource Undefined`);
+  if(!object.value || !object.max)
+  {
+    object.value = object.max = value;
+  }else{
+    object.value = Math.clamped(object.value + value, 0, object.max);
+  }
+
+  resources[key] = object;
+  return await actor.update({ "data.resources" : resources });
+}
+
