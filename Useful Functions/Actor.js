@@ -34,24 +34,17 @@ async function linkToken({ token })
 /*
   Apply Damage (w/ resistances, immunities, & vulnerabilities)
 */
-async function applyDamage({ actor , damage } = {})
+async function applyDamage({ actor , type, value } = {})
 {
-  if(!actor || !damage) return;
+  if(!actor || !type || !value) return;
   let {di,dr,dv} = actor.data.data.traits;
 
-  if(arrInclude(di,damage.type))
-  {
-    return actor;
-  }
-  if(arrInclude(dr,damage.type))
-  {
-    return await actor.applyDamage(damage.value, 0.5)
-  }
-  if(arrInclude(dv, damage.type))
-  {
-    return await actor.applyDamage(damage.value, 2);
-  }
-  return await actor.applyDamage(damage.value);
+  let multiplier = 
+    arrInclude(di,type) ? null :
+    arrInclude(dr,type) ? 0.5 :
+    arrInclude(dv,type) ? 2 : 1;
+
+  return multiplier !== null ? await actor.applyDamage(value, multiplier) : actor;
 
   function arrInclude(obj, val)
   {
