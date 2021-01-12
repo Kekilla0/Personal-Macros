@@ -9,20 +9,20 @@ function moduleStatus(name)
 /*
   Combat Utility Belt
 */
-async function toggleCondition(condition, entity, {warn = true} = {})
+async function toggleCondition(condition, token, {warn = true} = {})
 {
-  if(!condition || !entity || !moduleStatus("combat-utility-belt")) return;
+  if(!condition || !token || !moduleStatus("combat-utility-belt")) return;
 
-  game.cub.hasCondition(condition, entity, {warn})
-    ? await game.cub.removeCondition(condition, entity, {warn})
-    : await game.cub.addCondition(condition, entity, {warn});
+  game.cub.hasCondition(condition, token, {warn})
+    ? await game.cub.removeCondition(condition, token, {warn})
+    : await game.cub.addCondition(condition, token, {warn});
 
-  return game.cub.hasCondition(condition, entity, {warn});
+  return game.cub.hasCondition(condition, token, {warn});
 }
 
-function getConditions(entity)
+function getConditions({token})
 {
-  let { conditions } = game.cub.getConditions(entity);
+  let { conditions } = game.cub.getConditions(token);
   conditions = conditions instanceof Array ? conditions : [conditions];
 
   return conditions.map(({name})=> name);
