@@ -74,3 +74,24 @@ async function editResource({ actor, name = ``, value = 1 })
   return await actor.update({ "data.resources" : resources });
 }
 
+async function editHitDie({actor, value, event, name} = {})
+{
+  if(!!event) 
+    value = event.shiftKey ? -1 : 1;
+  if(!value || !actor) return;
+
+  let class_items = actor.items.filter(item=> item.type === `class`);
+
+  if(!class_items || (class_items.length > 1 && !name)) return;
+
+  let item = !name ? class_items[0] : class_items.find(i=> i.name === name);
+  if(!item) return;
+  let {hitDice, hitDiceUsed, levels} = item.data.data;
+
+  if(value > 0 && hitDiceUsed !== levels)
+    for(let i = 0; i < value; i++)
+      await actor.rollHitDie(hitDice, {dialog : false});
+  else if(hitDiceUsed !== 0)
+    await actor.updateOwnedItem({_id : item.id, "data.hitDiceUsed" : hitDiceUsed - value});
+}
+
