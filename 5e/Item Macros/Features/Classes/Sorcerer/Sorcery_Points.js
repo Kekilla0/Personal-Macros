@@ -126,7 +126,7 @@ async function updateDialog()
         <h3 style="flex : 1; justify-content:flex-end">${macroActor.data.name} </h3>
       </div>
       <div style="display:flex; flex-direction:row; justify-content:space-between; align-items:center; flex-grow:1;">
-        <h3 style="flex : 3; justify-content:flex-start;">spellSlots : ${data.spellSlots.map(ss=> ss.value).join(`/`)}</h3>
+        <h3 style="flex : 3; justify-content:flex-start;">Spell Slots : ${data.spellSlots.map(ss=> ss.value).join(`/`)}</h3>
         <h3 style="flex : 2; justify-content:flex-end;">Sorcery Points : ${data.sorcPoints.value}/${data.sorcPoints.max}</h3>
       </div>
       ${getActions()}
