@@ -3,7 +3,7 @@
   Requirements : 
     1. Character or Token must possess 
       A. A level in "Sorcerer"
-      B. Item named "Sorcery Points"
+      B. Item named "Font of Magic"
       C. Optional : Items appropriately named for Specific Metamagics
 */
 
