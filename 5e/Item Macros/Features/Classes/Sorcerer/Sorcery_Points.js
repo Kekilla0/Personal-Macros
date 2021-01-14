@@ -58,8 +58,8 @@ async function dataCheck()
     if(key === `pact` && max !== 0) data.spellSlots.push({ slot : `pact`, value, max });
   });
 
-  if(!data.items.find(i=> i.name === `Sorcerer`)) return error(`${macroActor.name} does not have a level in Sorcerer`);
-  if(!data.items.find(i=> i.name === `Font of Magic`)) return error(`${macroActor.name} does not have the Font of Magic item/feature.`);
+  if(!data.items.find(i=> i.name === `Sorcerer`)._id !== null) return error(`${macroActor.name} does not have a level in Sorcerer`);
+  if(!data.items.find(i=> i.name === `Font of Magic`)._id !== null) return error(`${macroActor.name} does not have the Font of Magic item/feature.`);
 
   await fixFont();
 
