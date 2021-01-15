@@ -7,3 +7,12 @@ function togglePack({ key })
   pack.rendered ? pack.close() : pack.render(true);
   return pack;
 }
+
+async function getItem({ key = ``, name = ``, id = `` })
+{
+  let contents = await game.packs.get(key).getContents();
+
+  return name === `` 
+    ? contents.find(i=>i.id === id) 
+    : contents.find(i=>i.name === name)
+}
