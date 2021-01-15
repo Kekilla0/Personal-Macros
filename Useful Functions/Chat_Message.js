@@ -9,7 +9,7 @@ async function sendMessage({ content, whisper = ChatMessage.getWhisperRecipients
 /*
   Two Roll toMessage
 */
-async function doubleRoll({ rolls , title = ``, img = ``})
+async function doubleRoll({ rolls , title = ``, img = ``, flavor = ``})
 {
   let [a,b] = rolls;
   if(!a || !b ) return;
@@ -17,8 +17,12 @@ async function doubleRoll({ rolls , title = ``, img = ``})
   let template = `
     <hr>
     <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:flex-start; align-items:center;">
-      <img style="flex : 0 0 36px; margin-right:5px" src="${img}" title="${title}" width="36" height="36"/>
-      <h3 style="flex : 1">${title}</h3>
+      <img style="flex : 0 0 36px; margin-right:5px" src="${img}" title="${title}" width="42" height="42"/>
+      <div style="display:flex; flex-direction:column; flex-wrap:nowrap; justify-content: flex-start; align-items:center;">
+        <h3 style="flex : 1">${title}</h3>
+        <p>${flavor}</p>
+      </div>
+      
     </div>
     <hr>
     <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1">
