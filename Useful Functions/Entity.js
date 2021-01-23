@@ -11,7 +11,7 @@ async function permission({ entity, value , users }={})
 {
   users = users instanceof Array ? users : [users];
 
-  let {permission} = duplicate(entity.data);
+  let permission = entity.data.permission instanceof Object ? duplicate(entity.data.permission) : {};
 
   users.forEach(id=> {
     if(game.users.get(id) !== null || id === `default`)

@@ -74,24 +74,34 @@ async function editResource({ actor, name = ``, value = 1 })
   return await actor.update({ "data.resources" : resources });
 }
 
+/*
+  Actor - 5e - editHitDie
+  accepts an actor instance, value to change the actors hitDie, and event to control value, and a name of a class
+  value => negative numbers results in a creation of hit die, where as possitive numbers cause a use of Hit die via "rollHitDice"
+  event => shift depressed will create 1 hit die, not depressed will use 1 hit die.
+
+  should return the editted actor
+*/
 async function editHitDie({actor, value, event, name} = {})
 {
   if(!!event) 
     value = event.shiftKey ? -1 : 1;
-  if(!value || !actor) return;
+  if(!value || !actor) return error(`No Value or Actor`);
 
-  let class_items = actor.items.filter(item=> item.type === `class`);
+  let class_items = actor.items
+    .filter(item=> item.type === `class`&& item.data.data.hitDiceUsed !== item.data.data.levels);
 
-  if(!class_items || (class_items.length > 1 && !name)) return;
+  if(!class_items) return error(`No Class Items Available`);
 
   let item = !name ? class_items[0] : class_items.find(i=> i.name === name);
-  if(!item) return;
+
+  if(!item) return error(`No Class Item ${!name ? `` : name}`);
   let {hitDice, hitDiceUsed, levels} = item.data.data;
 
   if(value > 0 && hitDiceUsed !== levels)
     for(let i = 0; i < value; i++)
       await actor.rollHitDie(hitDice, {dialog : false});
-  else if(hitDiceUsed !== 0)
-    await actor.updateOwnedItem({_id : item.id, "data.hitDiceUsed" : hitDiceUsed - value});
+  else if(hitDiceUsed < 0)
+    await actor.updateOwnedItem({_id : item.id, "data.hitDiceUsed" : Math.clamped(hitDiceUsed - value, 0, levels)});
 }
 

@@ -7,14 +7,22 @@ function isMax(d = new Die(``))
 }
 
 /*
-  Will check to see if all die, returns boolean
+  Will check to see if all die, returns boolean (or the same number/null)
+  accepts roll.dice arguments
 */
-function isSame(d = new Die(``))
+function isSame_bool(d = [])
 {
-  return d.results.reduce((c,a,i)=>{
+  return d.reduce((c,a,i)=>{
     if(i === 0) return true;
-    return c && a.result === d.results[i-1].result;
+    return c && a.total === d[i-1].total;
   }, true);
+}
+function isSame_numb(d = [])
+{
+  return d.reduce((c,a,i)=>{
+    if(i===0 || d[i-1].total == a.total ) return a.total;
+    return null;
+  }, 0);
 }
 
 /*

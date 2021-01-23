@@ -28,7 +28,7 @@ const build_char = true;
   */
   let rand_char = [];
 
-  rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i)=>{
+  rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i,a)=>{
     if(!build_char) return;
 
     if(i === 0)
