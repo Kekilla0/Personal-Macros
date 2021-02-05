@@ -105,3 +105,16 @@ async function editHitDie({actor, value, event, name} = {})
     await actor.updateOwnedItem({_id : item.id, "data.hitDiceUsed" : Math.clamped(hitDiceUsed - value, 0, levels)});
 }
 
+/*
+  Toggle Item Equipped Status
+*/
+async function toggleEquip({ actor, item })
+{
+  if(!actor || !item) return;
+
+  item = actor.items.getName(item) || actor.items.get(item);
+
+  if(!item) return;
+
+  return await item.update({"data.equipped" : !item.data.data.equipped});
+}
