@@ -14,13 +14,13 @@ Hooks.on(`preCreateChatMessage`, (message)=>{
   if(message.user === game.user.id)
   {    
     //determine if proficient
-    let currentProf = proficient(message);
-    if(currentProf === 0) return;
-    let newProf = bonus_die[currentProf] || null;
+    let profObj = proficient(message);
+    if(profObj.prof === null || profObj.prof === 0) return;
+    let newProf = bonus_die[profObj.prof] || null;
     if(newProf === null) return;
 
     //remake roll without proficiency & with new bonus_die
-    let roll = new Roll(JSON.parse(message.roll).formula.replace(`+ ${currentProf}`, `+ ${newProf}`)).roll();
+    let roll = new Roll(JSON.parse(message.roll).formula.replace(`+ ${profObj.search}`, `${profObj.keep ? `+ ${profObj.keep}` : ``} + ${newProf}`)).roll();
 
     //change content & roll
     setProperty(message,"content", `${roll.total}`);
@@ -38,13 +38,32 @@ function proficient(message)
   switch(info.type)
   {
     case `ability` :
-      return 0;
+      return {
+        search : null, 
+        prof : null, 
+        keep : null,
+      };
     case `save` : 
-      return actor.data.data.abilities[info.abilityId].prof;
+      let saveData = actor.data.data.abilities[info.abilityId];
+      return {
+        search : saveData.prof, 
+        prof : (saveData.save - saveData.mod), 
+        keep : null,
+      }
     case `skill` :
-      return actor.data.data.skills[info.skillId].prof;
+      let skillData = actor.data.data.skills[info.skillId];
+      return {
+        search : skillData.total, 
+        prof : skillData.prof, 
+        keep : skillData.mod,
+      };
     case `attack` :
-      return actor.items.get(info.itemId).data.data.proficient ? actor.data.data.attributes.prof : 0;
+      let {proficient} = actor.items.get(info.itemId).data.data;
+      return  {
+        search : actor.data.data.attributes.prof, 
+        prof : proficient ? actor.data.data.attributes.prof : 0, 
+        keep : null
+      }
     default :
       error(`Type not accounted for ${info.type}`);
       return 0;
