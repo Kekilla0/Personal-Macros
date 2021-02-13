@@ -118,3 +118,66 @@ async function toggleEquip({ actor, item })
 
   return await item.update({"data.equipped" : !item.data.data.equipped});
 }
+
+async function rollItem({actor, item, versatile = false})
+{
+  if(!actor && (item instanceof String || typeof item === 'string')) return false;
+  if(item instanceof String || typeof item === 'string')
+    item = actor.items.get(item) || actor.items.getName(item);
+
+  if(!item.hasAttack && !item.hasDamage) return false;
+
+  return { attack : await item.rollAttack(), damage : await item.rollDamage({versatile})};  
+}
+
+async function addTempHP({ actor, value, override = false})
+{
+  let { hp } = actor.data.data.attributes;
+  if(override || hp.temp < value)
+  {
+    return await actor.update({ "data.attributes.hp.temp" : value });
+  }else {
+    return actor;
+  }
+}
+
+/*
+  PF2e Dying Macro
+*/
+async function rollRecovery({actor}) {
+  if(actor.data.type !== "character")
+      throw Error("Recovery rolls are only applicable to characters");
+  const dying = actor.data.data.attributes.dying.value
+    , recoveryDc = 10 + (getProperty(actor.data.data.attributes, "dying.recoveryMod") || 0)
+    , flatCheck = new Roll("1d20").roll()
+    , dc = recoveryDc + dying;
+
+  let result = 20 === flatCheck.total || flatCheck.total >= dc + 10 ? `${game.i18n.localize("PF2E.CritSuccess")} ${game.i18n.localize("PF2E.Recovery.critSuccess")}` : 1 === flatCheck.total || flatCheck.total <= dc - 10 ? `${game.i18n.localize("PF2E.CritFailure")} ${game.i18n.localize("PF2E.Recovery.critFailure")}` : flatCheck.result >= dc ? `${game.i18n.localize("PF2E.Success")} ${game.i18n.localize("PF2E.Recovery.success")}` : `${game.i18n.localize("PF2E.Failure")} ${game.i18n.localize("PF2E.Recovery.failure")}`;
+  const message = `\n      ${game.i18n.format("PF2E.Recovery.rollingDescription", {
+      dc,
+      dying
+  })}.\n      <div class="dice-roll">\n        <div class="dice-formula" style="padding: 0 10px; word-break: normal;">\n          <span style="font-size: 12px; font-weight: 400;">\n            ${result}\n          </span>\n        </div>\n      </div>\n      `;
+  flatCheck.toMessage({
+      speaker: ChatMessage.getSpeaker({
+          actor: actor
+      }),
+      flavor: message
+  }, {
+      rollMode: game.settings.get("core", "rollMode")
+  });
+
+  if(result.includes("Success"))
+  {
+    await actor.update({ "data.attributes.dying.value" : Math.clamped(
+      actor.data.data.attributes.dying.value - 1,
+      0,
+      actor.data.data.attributes.dying.max
+    )});
+  }else{
+    await actor.update({ "data.attributes.dying.value" : Math.clamped(
+      actor.data.data.attributes.dying.value + 1,
+      0,
+      actor.data.data.attributes.dying.max
+    )});
+  }
+}
