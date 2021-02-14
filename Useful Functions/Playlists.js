@@ -21,9 +21,9 @@ async function enableStreaming({ name })
   return await Playlist.update(updates);
 }
 
-async function playSound({ playlist, sound })
+async function playSound({ playlist, sound, playing })
 {
-  let randomArrayElement = (arr) => arr[Math.floor(Math.random()* arr.length)]; 
+  const randomArrayElement = (arr) => arr[Math.floor(Math.random()* arr.length)]; 
 
   if(!playlist) return;
   if(playlist instanceof String || typeof playlist === 'string')
@@ -31,11 +31,11 @@ async function playSound({ playlist, sound })
   if(!sound) sound = randomArrayElement(playlist.data.sounds.map(s=> s.name));
 
   let updateData = {};
-  updateData.sounds = duplicate(playlist.data.sounds).map((s,i)=> {
-    if(s.name === sound) s.playing = true;
+  updateData.sounds = duplicate(playlist.data.sounds).map((s)=> {
+    if(s.name === sound) s.playing = playing === undefined ? !s.playing : playing;
     return s;
   });
-  updateData.playing = updateData.sounds.length > 0;
+  updateData.playing = updateData.sounds.reduce((a,s) => a || s.playing, false);
   
   return await playlist.update(updateData);
 }

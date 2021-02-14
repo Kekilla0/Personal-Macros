@@ -1,22 +1,30 @@
 /*
   World Scripter : Proficiency Dice
 */
-const error = (...args) => {ui.notifications.error(`Proficiency Die Macro | `, ...args); return new Error(`Proficiency Die ${args.join(` `)}`); }
-const bonus_die = {
-  2 : `1d4`,
-  3 : `1d6`,
-  4 : `1d8`,
-  5 : `1d10`,
-  6 : `1d12`
-};
+const config = {
+  active : false,
+  bonusDie : {
+    2 : `1d4`,
+    3 : `1d6`,
+    4 : `1d8`,
+    5 : `1d10`,
+    6 : `1d12`
+  },
+  fn : {
+    error : (...args) => {ui.notifications.error(`Proficiency Die Macro | `, ...args);}
+  }
+}
+if(config.active)
+  Hooks.on(`preCreateChatMessage`, proficientMessage)
 
-Hooks.on(`preCreateChatMessage`, (message)=>{
+function proficientMessage(message)
+{
   if(message.user === game.user.id)
   {    
     //determine if proficient
     let profObj = proficient(message);
     if(profObj.prof === null || profObj.prof === 0) return;
-    let newProf = bonus_die[profObj.prof] || null;
+    let newProf = config.bonusDie[profObj.prof] || null;
     if(newProf === null) return;
 
     //remake roll without proficiency & with new bonus_die
@@ -26,7 +34,7 @@ Hooks.on(`preCreateChatMessage`, (message)=>{
     setProperty(message,"content", `${roll.total}`);
     setProperty(message,"roll", JSON.stringify(roll));
   }
-});
+}
 
 function proficient(message)
 {
@@ -65,7 +73,7 @@ function proficient(message)
         keep : null
       }
     default :
-      error(`Type not accounted for ${info.type}`);
+      config.fn.error(`Type not accounted for ${info.type}`);
       return 0;
   }
 }
