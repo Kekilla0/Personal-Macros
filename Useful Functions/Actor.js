@@ -181,3 +181,44 @@ async function rollRecovery({actor}) {
     )});
   }
 }
+
+/*
+  Increment Data
+    Shift : +1 to data
+    No Shift : -1 to data
+    Ctrl : display Message
+
+  data = [{
+    string = "path.to.value"
+    value = {
+      min = 0, max = value
+    }
+  }]
+ */
+async function incrementData({ actor, data, event })
+{
+  data = data instanceof Array ? data : [data];
+  let updateData = {};
+
+  data.forEach(d=> {
+    let value = getProperty(actor.data, d.string);
+    if(Number.isNaN(value)) return;
+
+    if(event.shiftKey)
+    {
+      value++;
+    }else{
+      value--;
+    }
+    updateData[d.string] = Math.clamped(value, d.value.min, d.value.max);
+  });
+
+  if(event.ctrlKey)
+  {
+    ChatMessage.create({ 
+      content : `${actor.name} data update. <hr> ${Object.entries(updateData).reduce((a,[k,v])=> a + `${k} => ${v}`, "")}`
+    });
+  }
+
+  actor.update(updateData);
+}
