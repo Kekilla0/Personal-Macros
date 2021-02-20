@@ -220,5 +220,5 @@ async function incrementData({ actor, data, event })
     });
   }
 
-  actor.update(updateData);
+  return await actor.update(updateData);
 }
