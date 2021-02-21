@@ -28,9 +28,7 @@ const build_char = true;
     weapon metal types? differences? changes in moneys?
     links to the items (aka find them in a compendium and link to them)
   */
-  let rand_char = [];
-
-  rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i,a)=>{
+  let rand_char = Array(new Roll(`1d8+1`).roll().total).fill(0).forEach((r,i,a)=>{
     if(!build_char) return;
 
     if(i === 0)
