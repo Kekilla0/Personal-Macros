@@ -25,6 +25,8 @@ const build_char = true;
   /*
     Add total Gold
     Roll Random Characteristics of the Shop/Shopkeep
+    weapon metal types? differences? changes in moneys?
+    links to the items (aka find them in a compendium and link to them)
   */
   let rand_char = [];
 

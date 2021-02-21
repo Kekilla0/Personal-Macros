@@ -9,13 +9,13 @@ function getMousePosition() {
 /*
   Grid Center
 */
-function getCenterGrid({x,y}= {})
+function getCenterGrid(point = {})
 {
   const arr = canvas.grid.getCenter(point.x, point.y);
   return { x: arr[0], y : arr[1] };
 }
 
-function getEntity(type, point)
+function getEntity(type = ``, point = {})
 {
   return canvas[type].placeables.filter(z=>
     {
@@ -25,7 +25,7 @@ function getEntity(type, point)
   );
 }
 
-function getAll({x,y}={})
+function getAll(point = {})
 {
   const types = [`drawings`,`lighting`,`notes`,`sounds`,`templates`, `tiles`, `tokens`, `walls`];
 
@@ -53,4 +53,15 @@ function getShift(centerPoint, shiftDirection)
   y = (y*h) + centerPoint.y;
 
   return getCenterGrid({x,y});
+}
+
+/*
+  Capture Click
+ */
+function captureClick(fn)
+{
+  $(document.body).on("click", event => {
+    $(document.body).off("click");
+    fn(event);
+  })
 }
