@@ -16,3 +16,9 @@ async function getItem({ key = ``, name = ``, id = `` })
     ? contents.find(i=>i.id === id) 
     : contents.find(i=>i.name === name)
 }
+
+async function getAll({ key })
+{
+  let pack = game.packs.get(key);
+  return await pack.getContent();
+}

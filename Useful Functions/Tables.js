@@ -44,3 +44,35 @@ function wanderingMonster()
     };
   }
 }
+
+/*
+  createTabe
+  @entries : array of some type => string, item, actor, etc
+  @name : name of the new Table
+
+  @return : returns the promise of the new RollTable
+*/
+async function createTable({ entries, name })
+{
+  let data = createData(entries, name);
+  return await RollTable.create(data);
+
+  function createData(arr = [], tableName)
+  {
+    let range = [-1,-1], type = 1, weight =1;
+    return {
+      name : tableName, formula : `d${arr.length}`, replacement : true, displayRoll : true, 
+      results : arr.map(c=> {
+        range = range.map(r => r+=1);
+        let s = c instanceof String || typeof c === 'string';
+        return {
+          collection : s ? `string` : c.entity,
+          drawn : false, 
+          img : s ? DEFAULT_TOKEN : c.img, 
+          range, type, weight,
+          text : s ? s : c.name,
+        }
+      })
+    };
+  }
+}

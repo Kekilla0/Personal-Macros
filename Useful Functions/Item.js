@@ -31,7 +31,7 @@ async function consumeUse({ item })
     data : (uses && quantity !== undefined) ? {uses, quantity} 
       : quantity !== undefined ? {quantity}
       : uses ? {uses} : null
-    };
+  };
 
   return await item.update(data);
 }

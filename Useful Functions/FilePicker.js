@@ -25,3 +25,12 @@ async function getFileByExt(source, target, extension)
     return arr;
   }
 }
+
+async function getFiles(source, target)
+{
+  let filePicker = await FilePicker.browse(source, target);
+  if(filePicker.files)
+    return [...filePicker.files];
+  else
+    return new Error(`${Source + target} does not have any files`);
+}
