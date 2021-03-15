@@ -24,14 +24,6 @@ async function permission({ entity, value , users }={})
 }
 
 /*
-  Change Actor Sheet 
-*/
-async function sheetChange({ actor, sheetName }={})
-{
-  return await actor.setFlag(`core`,`sheetClass`, sheetName);
-}
-
-/*
   Get Flags
     accepts an entity and a scope
     returns all flags in that scope
@@ -43,3 +35,18 @@ function getFlags(entity, scope)
   return getProperty(entity.data.flags, scope);
 }
 
+/*
+  delete duplicates
+*/
+async function deleteDuplicates({ entities })
+{
+  let iterated = [];
+
+  for(let entity of entities)
+  {
+    if(iterated.includes(entity.name))
+      await entity.delete();
+    else
+      iterated.push(entity.name);
+  }
+}

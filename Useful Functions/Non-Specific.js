@@ -16,4 +16,6 @@ let weightedArray = (arr, w, e) => { let reArr = []; arr.forEach(ele => { for(le
 
 let capitalize = (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
 
-let message = (content) => ChatMessage.create({content});
+let message = (...args) => ChatMessage.create({content : args.join(`<br>`)});
+
+let multilog = (...args) => args.forEach(m => console.log(`${this.name} Macro | `, m));

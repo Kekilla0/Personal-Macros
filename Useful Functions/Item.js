@@ -35,3 +35,14 @@ async function consumeUse({ item })
 
   return await item.update(data);
 }
+
+/*
+  changeDamage?
+*/
+async function changeDamage({ item, str = ``, type = ``})
+{
+  let {parts} = duplicate(item.data.data.damage);
+  parts[0] = [str, type];
+
+  return await item.update({ "data.damage.parts" : parts });
+}

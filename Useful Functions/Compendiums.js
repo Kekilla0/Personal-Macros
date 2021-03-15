@@ -10,7 +10,8 @@ function togglePack({ key })
 
 async function getItem({ key = ``, name = ``, id = `` })
 {
-  let contents = await game.packs.get(key).getContents();
+  let pack = game.packs.get(key);
+  let contents = await pack.getContents();
 
   return name === `` 
     ? contents.find(i=>i.id === id) 

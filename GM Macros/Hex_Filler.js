@@ -210,16 +210,6 @@ async function createJournals()
       } 
     });
   }
-
-  await createNotes();
-
-  async function createNotes()
-  {
-    for(let POI of PointsOfInterests)
-    {
-
-    }
-  }
 }
 
 async function sendMessage({ content, whisper = ChatMessage.getWhisperRecipients("GM"), speaker = ChatMessage.getSpeaker() }={})

@@ -101,3 +101,25 @@ function combine(arr)
     }
   });
 }
+
+/*
+  Fix this into a function
+*/
+(async () => {
+  let data = [
+    {type : `text`, label : `Dice : `, options : `d20`},
+    {type : `text`, label : `Modifier : `, options : `+0`},
+    {type : `checkbox`, label : `Advantage : `,},
+    {type : `checkbox`, label : `Disadvantage : `,},
+  ];
+
+  let [dice, modifier, adv, dis] = await quickDialog({ data, title : `Roll Dialog` });
+
+  
+
+  if(adv && !dis) {  dice = `2${dice}kh${modifier}`; }
+  else if(dis && !adv) { dice = `2${dice}kl${modifier}`; }
+  else { dice = `1${dice}${modifier}`; }
+
+  new Roll(dice).toMessage();
+})();

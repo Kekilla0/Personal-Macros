@@ -16,6 +16,14 @@ function createCharacter({ user })
 }
 
 /*
+  Change Actor Sheet 
+*/
+async function sheetChange({ actor, sheetName }={})
+{
+  return await actor.setFlag(`core`,`sheetClass`, sheetName);
+}
+
+/*
   Create Linked Actor From Token
 */
 async function linkToken({ token })
@@ -140,6 +148,11 @@ async function addTempHP({ actor, value, override = false})
     return actor;
   }
 }
+function hasEffect({ actor, effect = ``})
+{
+  if(effect === `` || !actor) return false;
+  return actor.effects.reduce((a,v) => a || v.data.label.toLowerCase() === effect.toLowerCase(), false);
+}
 
 /*
   PF2e Dying Macro
@@ -221,4 +234,23 @@ async function incrementData({ actor, data, event })
   }
 
   return await actor.update(updateData);
+}
+
+function stringifyRollData({ rollData, iteration = 0}){
+  const ignoreKey = [`description`, `appearance`, `bond`, `flaw`, `ideal`, `biography`, `damage`, ], tab = `   `;
+  let entryData = Object.entries(rollData), output = ``;
+
+  console.log(entryData);
+
+  entryData.forEach(([key, object])=> {
+    if(ignoreKey.includes(key)) return;
+
+    output += `${Array(iteration).fill(tab).join(``)}${key}`
+    if( object instanceof Object)
+      output += stringifyRollData({ rollData : object, iteration : iteration + 1 });
+    else if(object !== null)
+      output += ` : ${object}<br>`;
+  });
+  output += `<br>`
+  return output;
 }
