@@ -32,10 +32,14 @@ async function restore()
   ui.notifications.info(`Backup restored to ${canvas.scene.name}`);
 }
 
+async function remove(){
+  await canvas.scene.unsetFlag(`world`,`backup`);
+  ui.notifications.info(`Backup removed from ${canvas.scene.name}`);
+}
+
 buttonDialog({
   buttons : [
-    [`Backup Scene`, backup],
-    [`Restore Scene`, restore],
+    [`Backup Scene`, backup],[`Restore Scene`, restore],[`Remove Backup`, remove]
   ],
   title : `Scene Backup Tool`,
   content : ``,
