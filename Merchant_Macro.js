@@ -4,16 +4,16 @@
       These Merchants will be deliniated by having an active effect named "merchant" on them with a true or false value
     Choose from a list of controlled characters/actor (only unlinked? maybe a way to change this in the config)
     Purchase Items 
-      Able to see the the merchants and your own money supply, no changes made to the character or the merchant until the `Purchase` Button is pressed.
+
+    To Do : 
+      change the sell percentage to some constrained value between 30-80 percent, changed based on value in persuasion (-5, +10?)
+      currently this is stored in the config constant under purchasers.percent (which i dont like!)
 */
-const log = (...args) => args.forEach(m => console.log(`${this.name} Macro | `, m));
-const wait = async (ms) => new Promise((resolve)=> setTimeout(resolve, ms));
 const config = {
   merchants : {
-    object : game.actors.filter(a => a.data.type === `npc` && !!a.data.effects.find(e=> e.label === `Merchant` && !e.disabled)),
+    object : game.actors.filter(a => a.data.type === `npc` && !!a.data.effects.find(e=> e.label === `Merchant` && !e.disabled) && a.permission === 3 ),
     htmlID : randomID(),
     buttonIds : [],
-    percent : 100,
   },
   purchasers : {
     object : game.user.isGM === true 
@@ -21,9 +21,14 @@ const config = {
       : [game.user.character],
     htmlID: randomID(),
     buttonIds : [],
-    percent : 50,
+    percent : 50
   },
   appID : ``,
+  fn : {
+    log : (...args) => args.forEach(m => console.log(`${this.name} Macro | `, m)),
+    wait : async (ms) => new Promise((resolve)=> setTimeout(resolve, ms)), 
+    message : (...args) => ChatMessage.create({content : args.join(`<br>`)}),
+  }
 };
 
 main();
@@ -42,16 +47,10 @@ async function main()
 
   config.appID = dialog.appId;
   dialog.render(true);
-  await wait(500);
-  log(config);
+  await config.fn.wait(500);
   addEventListeners();
 
   function getContent(html){
-    /*
-      This has to build the whole thing no matter what the input is
-    */
-
-    //this is going to break on html => need to fix it
     const [merchant, purchaser] = html || [config.merchants.object[0].id, config.purchasers.object[0].id];
 
     return `
@@ -103,6 +102,10 @@ async function main()
       let itemData = config[object].object.find((a,i)=> a.id === selected).items.filter(i=> i.data.data.price !== 0 && !!i.data.data.price).map(i=> ({_id : i.id, actorId : i.actor.id, type : object, img : i.img, name : i.name, quantity : i.data.data.quantity, price : i.data.data.price}));
       config[object].buttonIds = itemData.map(i=> `${i.actorId}.${i._id}.${i.type}`);
 
+      let percent = object === `merchants` 
+        ? parseInt(config[object].object.find((a,i)=> a.id === selected).getFlag(`world`, `merchant-percentage`))
+        : config[object].percent;
+
       return `
       <table style="width:100%">
         <tr>
@@ -118,7 +121,7 @@ async function main()
                 <td><img src="${img}" width="30" height="30"></td>
                 <td>${name}</td>
                 <td style="text-align:center;">${quantity}</td>
-                <td style="text-align:center;">${price}</td>
+                <td style="text-align:center;">${(price * (percent/100)).toFixed(2)}</td>
                 <td style="text-align:center;"><button id="${actorId}.${_id}.${type}" value="${actorId}.${_id}.${type}" type="button" ${quantity === 0 ? `disabled` : ``}>${object === `merchants` ? `Buy` : `Sell`}</button></td>
               </tr>
             `, ``
@@ -130,7 +133,7 @@ async function main()
   }
   function getButtons(html){
     return {
-      one : {label : `Complete`, icon : ``, callback : (html) => {}},
+      one : {label : `Complete`, icon : ``, callback : () => {}},
     }
   }
   function getValues(){
@@ -139,16 +142,12 @@ async function main()
     else return Array.from(html).map(h=> h.value);
   }
   async function update(){
-    /*
-      This needs to accept "button updates" which will push an id to either this function or somewhere else.
-    */
     let html = getValues();
     dialog.data.content = getContent(html);
     dialog.data.buttons = getButtons(html);
     dialog.render(true);
-    await wait(500);
+    await config.fn.wait(500);
     addEventListeners();
-    log(`Update Ran`);
   }
   function addEventListeners(){
     document.getElementById(config.merchants.htmlID).onchange = update;
@@ -162,17 +161,18 @@ async function main()
       document.getElementById(id).onclick = (...args)=> transaction(id);
     });
   }
-  function transaction(executionString)
+  async function transaction(executionString)
   {
     const [merchant, purchaser] = getValues() || [config.merchants.object.length === 1 ? config.merchants.object[0].id : undefined, config.purchasers.object.length === 1 ? config.purchasers.object[0].id : undefined];
     const [actorID, itemID, type] = executionString.split(`.`);
 
-    log(
+    config.fn.log(
       `Merchant   : ${merchant}`,
       `Purchaser  : ${purchaser}`,
       `Actor Id   : ${actorID}`,
       `Item Id    : ${itemID}`,
-      `Type       : ${type}`
+      `Type       : ${type}`,
+      `----------------------------------------------------------`,
     );
 
     /*
@@ -183,21 +183,283 @@ async function main()
       get percent of the transaction from the config[purchasers/merchants]
         use type as sent to the transaction
     */
-    
-    log(`----------------------------------------------------------`);
     let from = game.actors.get(actorID);
     let item = from.items.get(itemID);
-    let percent = config[type].percent;
+    let percent = type === `purchasers` ? 50 : parseInt(from.getFlag(`world`,`merchant-percentage`)) || 100;
     let value = item.data.data.price;
     let to = actorID === merchant ? game.actors.get(purchaser) : game.actors.get(merchant);
 
-    log(
+    config.fn.log(
       `From : ${from.name}`,
       `To : ${to.name}`,
       `Item : ${item.name}`,
       `Percent : ${percent} `,
       `Value : ${value}`,
+      `___________________________________________________________`
     );
-    log(`___________________________________________________________`);
+
+    let actualValue = parseFloat(value) * (parseFloat(percent)/100);
+
+    if(getFunds(to) < actualValue)
+    {
+      ui.notifications.warn(`${to.name} has insufficent funds to purchase ${item.name} at the value of ${actualValue} gp.`);
+    }else{
+      await give(to, item, actualValue);
+      await take(from, item, actualValue);
+  
+      await update();
+
+      //message?
+    }
+
+
+    async function give(actor,item,value)
+    {
+      if(actor.items.find(i=> i.name === item.name))
+      {
+        item = actor.items.find(i=>i.name === item.name);
+        await item.update({"data.quantity" : item.data.data.quantity + 1});
+      }else{
+        let itemData = duplicate(item.data);
+        itemData.data.quantity = 1;
+        await actor.createOwnedItem(itemData);
+      }
+
+      let actor_money = getFunds(actor);
+      let remaining_Money = actor_money - value;
+      await updateFunds(actor,remaining_Money);
+      //money?
+    }
+
+    async function take(actor, item, value)
+    {
+      if(item.data.data.quantity === 1)
+      {
+        await item.delete();
+      }else{
+        await item.update({"data.quantity" : item.data.data.quantity - 1});
+      }
+
+      let actor_money = getFunds(actor);
+      let remaining_Money = actor_money + value;
+      await updateFunds(actor, remaining_Money);
+      //money?
+    }
+
+    function getFunds(actor)
+    {
+      let { pp, gp, ep, sp, cp } = duplicate(actor.data.data.currency);
+      return ((pp*10) + (gp) + (ep/2) + (sp/10) + (cp/100));
+    }
+
+    async function updateFunds(actor, value)
+    {
+      let base = value * 100;
+      let pp = (base - (base % 1000))/1000; base = base - pp * 1000;
+      let gp = (base - (base % 100))/100; base = base - gp * 100;
+      let ep = (base - (base % 50))/50; base = base - ep * 50;
+      let sp = (base - (base % 10))/10; base = base - sp * 10;
+      let cp = Math.floor(base);
+
+      config.fn.log(
+        `Value  : ${value}`,
+        `PP     : ${pp}`,
+        `GP     : ${gp}`,
+        `EP     : ${ep}`,
+        `SP     : ${sp}`,
+        `CP     : ${cp}`,
+      );
+
+      let currency = { pp, gp, ep, sp, cp};
+      await actor.update({ "data.currency" : currency });
+    }
+  }
+}
+
+
+/*
+  Idea : 
+    Second Macro to Handle "Merchants"
+
+  To Do :
+    Make it look better?
+*/
+const config = {
+  merchants : {
+    object : game.actors.filter(a => a.data.type === `npc` && !!a.data.effects.find(e=> e.label === `Merchant` && !e.disabled)), 
+  },
+  users : {
+    object : game.users.filter(u => !u.isGM),
+  },
+  fn : {
+    log : (...args) => args.forEach(m => console.log(`${this.name} Macro | `, m)),
+    wait : async (ms) => new Promise((resolve)=> setTimeout(resolve, ms)), 
+    message : (...args) => ChatMessage.create({content : args.join(`<br>`)}),
+  },
+  appID : ``,
+  eventIDs : {
+    merchant : "merchant-dropdown",
+    updateButton : "update-data-button",
+    percent : "percentage-input",
+    pp : "p-input", gp : "g-input", ep : "e-input", sp : "s-input", cp : "c-input",
+    users : game.users.filter(u=>!u.isGM).map(u=> `user.${u.id}`),
+  }
+}
+
+main();
+
+async function main()
+{
+  let html = getHTML();
+  let content = getContent(html);
+  let buttons = getButtons(html);
+  
+  let dialog = new Dialog({
+    content, buttons, title : `Merchant Handler`
+  },{
+    width : 800,
+  });
+
+  config.appID = dialog.appId;
+  dialog.render(true);
+  await config.fn.wait(500);
+  addEventListeners();
+
+  config.fn.log(config);
+
+  function getHTML(){
+    let data = {};
+    Object.entries(config.eventIDs).forEach(([key, value])=> {
+      if(key.includes("updateButton")) return;
+      if(value instanceof Array){
+        for(let v of value)
+          data[v] = document.getElementById(v)?.checked;
+      }else{
+        if(value.includes("input")){
+          data[key] = document.getElementById(value)?.valueAsNumber;
+        }else{
+          data[key] = document.getElementById(value)?.value;
+        }
+      }
+    })
+    config.fn.log(data);
+    return data;
+  }
+  function getContent(html){
+    let selectedMerchant = html.merchant || config.merchants.object[0].id;
+
+    return `
+      <div style="display:flex;flex-direction:column;justify-content:space-between;height:100%;width:100%;">
+        <div style="display:flex;justify-content:right;width:100%;height:40px">
+          ${getMerchants()}
+        </div>
+        <hr>
+        <div style="display:flex;width:100%;flex-direction:row;">
+          <div style="display:flex;width:50%;flex-direction:column">
+            ${getMoney()}
+          </div>
+          <div style="display:flex;width:50%;flex-direction:column">
+            ${getPermission()}
+          </div>
+        </div>
+        <div>
+          <button type="button" id="${config.eventIDs.updateButton}">Update Merchant</button>
+        </div>
+      </div>
+    `;
+
+    function getMerchants(){
+      return `
+      <select name="merchants" id="${config.eventIDs.merchant}" ${config.merchants.object.length === 1 ? `disabled` : ``}>
+        ${config.merchants.object.reduce((a,v,i,r)=> a += `<option value="${v.id}" ${selectedMerchant == v.id ? `selected` : ``}>${v.name}</option>`, ``)}
+      </select>`;
+    }
+    function getMoney(){
+      let gma = game.actors.get(selectedMerchant);
+      let percent = gma?.getFlag(`world`,`merchant-percentage`);
+      let currency = gma.data.data.currency;
+
+      return `
+        <table style="">
+          <tr>
+            <td>Percentage Sell Cost</td>
+            <td><input type="number" id="${config.eventIDs.percent}" value="${percent || 100}"></td>
+          </tr>
+          <tr>
+            <td>PP</td>
+            <td><input type="number" id="${config.eventIDs.pp}" value="${currency?.pp || 0}"></td>
+          </tr>
+          <tr>
+            <td>GP</td>
+            <td><input type="number" id="${config.eventIDs.gp}" value="${currency?.gp || 0}"></td>
+          </tr>
+          <tr>
+            <td>EP</td>
+            <td><input type="number" id="${config.eventIDs.ep}" value="${currency?.ep || 0}"></td>
+          </tr>
+          <tr>
+            <td>SP</td>
+            <td><input type="number" id="${config.eventIDs.sp}" value="${currency?.sp || 0}"></td>
+          </tr>
+          <tr>
+            <td>CP</td>
+            <td><input type="number" id="${config.eventIDs.cp}" value="${currency?.cp || 0}"></td>
+          </tr>
+        </table>
+      `;
+    }
+    function getPermission(){
+      let gpa = game.actors.get(selectedMerchant);
+      return `
+        ${config.users.object.reduce((acc, val, ind, arr)=> acc += `
+          <div style="display:flex;width:100%;height:40px;justify-content:space-between;">
+            <label>${val.name}</label><input type="checkbox" id="user.${val.id}" ${gpa.data.permission[val.id] === 3  ? `checked` : ``}> 
+          </div>
+        `, ``)}
+      `;
+    }
+  }
+  function getButtons(html){
+    return {
+      one : {label : `Done`, icon : ``, callback : () => {}},
+    }
+  }
+  async function update(){
+    let html = getHTML();
+    dialog.data.content = getContent(html);
+    dialog.data.buttons = getButtons(html);
+    dialog.render(true);
+    await config.fn.wait(500);
+    addEventListeners();
+  }
+  function addEventListeners(){
+    document.getElementById(config.eventIDs.merchant).onchange = update;
+    document.getElementById(config.eventIDs.updateButton).onclick = updateMerchant;
+  }
+  async function updateMerchant()
+  {
+    let html = getHTML();
+    let actor = game.actors.get(html.merchant);
+
+    let { pp, gp, ep, sp, cp, percent } = html;
+
+    let data = {
+      data : {
+        currency : {
+          pp, gp, ep, sp, cp,
+        }
+      },
+      "flags.world.merchant-percentage" : percent,
+      permission : {},
+    }
+
+    Object.entries(html).forEach(([key,value])=>{
+      if(key.includes(`user`)){
+        let id = key.split(`.`)[1];
+        data.permission[id] = value === true ? 3 : 0;
+      }
+    });
+
+    await actor.update(data);
   }
 }
