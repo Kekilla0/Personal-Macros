@@ -6,8 +6,6 @@
     Purchase Items 
 
     To Do : 
-      change the sell percentage to some constrained value between 30-80 percent, changed based on value in persuasion (-5, +10?)
-      currently this is stored in the config constant under purchasers.percent (which i dont like!)
 */
 const config = {
   merchants : {
@@ -21,7 +19,7 @@ const config = {
       : [game.user.character],
     htmlID: randomID(),
     buttonIds : [],
-    percent : 50
+    percent : `ceil(3.5*(@skills.per.total) + 48)`
   },
   appID : ``,
   fn : {
@@ -99,12 +97,13 @@ async function main()
       );
     }
     function getItemList(object = ``, selected){
-      let itemData = config[object].object.find((a,i)=> a.id === selected).items.filter(i=> i.data.data.price !== 0 && !!i.data.data.price).map(i=> ({_id : i.id, actorId : i.actor.id, type : object, img : i.img, name : i.name, quantity : i.data.data.quantity, price : i.data.data.price}));
+      let selectedActor = config[object].object.find(a=> a.id === selected);
+      let itemData = selectedActor.items.filter(i=> i.data.data.price !== 0 && !!i.data.data.price).map(i=> ({_id : i.id, actorId : i.actor.id, type : object, img : i.img, name : i.name, quantity : i.data.data.quantity, price : i.data.data.price}));
       config[object].buttonIds = itemData.map(i=> `${i.actorId}.${i._id}.${i.type}`);
 
       let percent = object === `merchants` 
-        ? parseInt(config[object].object.find((a,i)=> a.id === selected).getFlag(`world`, `merchant-percentage`))
-        : config[object].percent;
+        ? parseInt(selectedActor.getFlag(`world`, `merchant-percentage`))
+        : new Roll(config.purchasers.percent, selectedActor.getRollData()).roll().total;
 
       return `
       <table style="width:100%">
@@ -185,7 +184,7 @@ async function main()
     */
     let from = game.actors.get(actorID);
     let item = from.items.get(itemID);
-    let percent = type === `purchasers` ? 50 : parseInt(from.getFlag(`world`,`merchant-percentage`)) || 100;
+    let percent = type === `purchasers` ? new Roll(config.purchasers.percent, from.getRollData()).roll().total : parseInt(from.getFlag(`world`,`merchant-percentage`)) || 100;
     let value = item.data.data.price;
     let to = actorID === merchant ? game.actors.get(purchaser) : game.actors.get(merchant);
 
