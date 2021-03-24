@@ -58,10 +58,14 @@ function getShift(centerPoint, shiftDirection)
 /*
   Capture Click
  */
-function captureClick(fn)
+function captureClick(fn, remove = true)
 {
   $(document.body).on("click", event => {
-    $(document.body).off("click");
+    if(remove) $(document.body).off("click");
     fn(event);
   })
 }
+
+
+const mousePos = () => canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(canvas.app.stage);
+const centerGrid = (p) => canvas.grid.getCenter(p.x,p.y);

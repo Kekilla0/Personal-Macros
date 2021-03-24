@@ -45,3 +45,20 @@ async function doubleRoll({ rolls , title = ``, img = ``, flavor = ``})
   return await ChatMessage.create({ content : template });
 }
 
+/*
+  get last roll result
+*/
+function lastRoll({ user = null}){
+  let messages = Array.from(game.messages);
+  if(user) messages = messages.filter(m=> m.data.user === user);
+
+  let data;
+  while(!data && messages.length !== 0)
+  {
+    let message = messages.pop();
+    if(message.isRoll)
+      data = message.roll.total;
+  }
+  
+  return data;
+}

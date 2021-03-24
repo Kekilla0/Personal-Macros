@@ -1,7 +1,7 @@
 /*
   Async rewrite for forEach
 */
-Array.prototype.forEach = async function (callback) {
+Array.prototype.forEachAsync = async function (callback) {
   for(let index = 0; index < this.length; index++)
       await callback(this[index], index, this);
 }
@@ -10,20 +10,13 @@ Array.prototype.forEach = async function (callback) {
   Array shuffle Add
 */
 Array.prototype.shuffle = function() {
-  var currentIndex = this.length, temporaryValue, randomIndex;
-
-  // While there remain elements to shuffle...
-  while (0 !== currentIndex) {
-
-    // Pick a remaining element...
-    randomIndex = Math.floor(Math.random() * currentIndex);
-    currentIndex -= 1;
-
-    // And swap it with the current element.
-    temporaryValue = this[currentIndex];
-    this[currentIndex] = this[randomIndex];
-    this[randomIndex] = temporaryValue;
+  var t, r;
+  for(let i = this.length; i > 0;){
+    r = Math.floor(Math.random() * i); 
+    i-=1;
+    t = this[i]; 
+    this[i] = this[r]; 
+    this[r] = t;
   }
-
   return this;
 }
