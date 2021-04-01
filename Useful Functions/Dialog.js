@@ -12,7 +12,7 @@
 */
 async function buttonDialog(data)
 {
-  return await new Promise((resolve) => {
+  return await new Promise(async (resolve) => {
     let buttons = {}, dialog;
 
     data.buttons.forEach(([str, callback])=>{
@@ -22,7 +22,17 @@ async function buttonDialog(data)
       }
     });
   
-    dialog = new Dialog({title : data.title , content : data.content, buttons, close : () => resolve(true) }).render(true);
+    dialog = new Dialog({
+      title : data.title , 
+      content : data.content, 
+      buttons, 
+      close : () => resolve(true) 
+    },{
+      width : 300,
+    });
+
+    await dialog._render(true);
+    dialog.element.find('.dialog-buttons').css({'flex-direction':'column'});
   });
 }
 

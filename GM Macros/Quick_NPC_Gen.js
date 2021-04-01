@@ -1,28 +1,49 @@
 /*
-  constant functions
-*/
+  Quick NPC Generator
 
+  ask questions
+  roll stuff
+  create journal
+  open journal
+*/
 
 const config = {
+  wait : async (ms) => new Promise((resolve)=> setTimeout(resolve, ms)),
+  random : (int) =>  Math.floor(Math.random() * int),
+  message : (...args) => ChatMessage.create({content : args.join(`<br>`)}),
   randomArrayElement : (arr) => arr[Math.floor(Math.random()* arr.length)],
-  weightedArray = (arr, w, e) => { let reArr = []; arr.forEach(ele => { for(let i=0; i< ele[w]; i++) reArr.push(ele[e]); }); return reArr; },
-  capitalize = (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`,
+  weightedArray : (arr, w, e) => { let reArr = []; arr.forEach(ele => { for(let i=0; i< ele[w]; i++) reArr.push(ele[e]); }); return reArr; },
+  capitalize : (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`,
+  races : [`Random`, `Dragonborn`, `Dwarf`, `Elf`, `Gnome`, `Half-Elf`, `Half-Orc`, `Halfling`, `Human`, `Tiefling`, `Goblin`, `Orc`, `Demon`],
+  occupations : ["Random", "NOBLEWOMAN","NOBLEMAN","GUARD","KNIGHT","SQUIRE / VALET","ARCHER","ROBBERS","ARMORER / SMITH","STEWARD","CHAPLAIN","COOK","FOOL / JESTER","TUTOR / SAGE","MAIDSERVANT","GUARD CAPTAIN","HORSEMASTER","STABLE HAND","HUNTSMAN","KENNELMASTER","BOWYER / FLETCHER","JAILER","PRISONER","TORTURER","GUARD","APPRENTICE CRAFTER","ARTISAN","SHOPKEEPER","MERCHANT","INDIVIDUAL SOLDIERS","POACHERS","SMUGGLERS","INDIVIDUAL PIRATES","INDIVIDUAL INVESTIGATORS","INDIVIDUAL GUARDS","COMMANDER","SCOUT","ARMORER","QUARTERMASTER","CAMP FOLLOWER",],
+  name : "",
+};
+
+(async ()=>{
+  let [race, occupation] = await quickDialog({
+    data : [
+      {type : `select`, label : `Race : `, options : config.races},
+      {type : `select`, label : `Occupations : `, options : config.occupations},
+    ],
+    title : `Quick NPC Generator Dialog`
+  });
+
+  let content = getCharacter(race, occupation);
+
+  let journal = game.journal.getName(config.name);
+  if(journal) await journal.delete();
+  journal = await JournalEntry.create({ content , folder : ``, name : config.name});
+  toggleJournal({ name : journal.name });
+})();
+
+function getTableResult({name  = ``} = {})
+{
+  if(!name) return {name : "", text : ""};
+  let {text} = game.tables.getName(name).roll().results[0];
+
+  return { name, text };
 }
-/*
-  Races available = 
-    Dragonborn
-    Dwarf
-    Elf
-    Gnome
-    Half-Elf
-    Half-Orc
-    Halfling
-    Human
-    Tiefling
-    Goblin
-    Orc
-    Demon
-*/
+
 function getName(race = ``, sex = ``)
 {
   const raceData = [
@@ -285,7 +306,7 @@ function getName(race = ``, sex = ``)
 
   // build sex & race is necessary
   if (!sex) sex = config.randomArrayElement([`Male`,`Female`].shuffle());
-  if (!race)
+  if (race === "Random")
   {
     let weightedRaces = config.weightedArray(raceData, `weight`, `name`);
     race = config.randomArrayElement(weightedRaces.shuffle());
@@ -302,13 +323,74 @@ function getName(race = ``, sex = ``)
   let lnLength = config.random(data.lastName.length);
   lnLength = lnLength > 5 ? lnLength : 5;
 
-  if(!data) return error(`You fucked up!`);
-
-  log(data);
+  if(!data) return;
 
   return { 
     firstName : config.capitalize(data.firstName[sex].map(arr=> config.randomArrayElement(arr.shuffle())).join(``)),
     lastName : config.capitalize(data.lastName.map(arr=> config.randomArrayElement(arr.shuffle())).filter((e,i)=> i < lnLength ).join(``)),
     race, sex
   };
+}
+
+function getCharacter(r,o)
+{
+  let { firstName, lastName, race, sex } = getName(r), characteristics = [];
+
+  config.name = `${firstName} ${lastName}`;
+
+  const tableNames = [
+    `d20 Eyes: The person has...`,
+    `d12 Ears: The person has...`,
+    `d10 Mouth: The person has...`,
+    `d12 Nose: The person has...`,
+    `d8 Chin or jaw: He/she has...`,
+    `d20 Hair: The person has...`,
+    `d6 Height: The person is...`,
+    `d20 Body: The person’s body is...`,
+    `d6 Hands: The person has...`,
+    `d4 Scar: The person has...`,
+    `d12 Tattoo: The person has...`,
+    `d8 Clothes: The person’s clothing is...`,
+    `d32 Calm Trait: When calm, the person is typically...`,
+    `d32 Stress Trait: When stressed, the person often becomes...`,
+    `d20 Mood: Now, the person is...`,
+    `d8 Faith: The person is a...`, 
+    `d6 Prejudice: The person is prejudice against...`,
+    `d20 Flaw: The person...`,
+    `d50 Mannerisms`,
+    `d20 Race : The person's linage is...`
+  ];
+
+  let num = new Roll(`1d8+1`).roll().total;
+
+  for(let i = 0; i < num; i++)
+    characteristics.push(getTableResult({ name : tableNames.shuffle().pop() }));
+
+  if(o === "Random")
+    o = config.randomArrayElement(config.occupations);
+  
+  let folder = game.folders.getName(o);
+
+  return `
+  <table>
+    <tr><td style="width:25%"> Name : </td><td style="width:75%">${firstName} ${lastName}</td></tr>
+    <tr><td style="width:25%"> Race : </td><td style="width:75%">${race}</td></tr>
+    <tr><td style="width:25%"> Sex : </td><td style="width:75%">${sex}</td></tr>
+    ${characteristics.reduce((acc,val)=> acc += `<tr><td style="width:25%">${val.name}</td><td style="width:75%">${val.text}</td></tr>`, ``)}
+    <tr><td style="width:100%" colspan=2><h2>${o}</h2></td></tr>
+    ${folder.content.reduce((acc, val)=> acc += `<tr><td style="width:25%">${val.name}</td><td style="width:75%">${getTableText({name : val.name})}</td></tr>`, ``)}
+  </table>
+  `;
+}
+
+function toggleJournal({ name })
+{
+  let journal = game.journal.getName(name);
+  journal.sheet.rendered ? journal.sheet.close() : journal.sheet.render(true);
+  return journal;
+}
+
+function getTableText({name  = ``} = {})
+{
+  return game.tables.getName(name).roll().results[0].text;
 }

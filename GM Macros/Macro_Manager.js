@@ -20,11 +20,18 @@
     "Delete_Templates"
   ];
 
-  let buttons = {}, dialog, content = `<div sytle="width:100%; text-align:center;><h2>Choose Macro</h2></div>`;
+  let buttons = {}, dialog, content = `<div sytle="width:100%;text-align:center;><h2>Choose Macro</h2></div>`;
   
   macros.forEach((str)=> {
+    let macro = game.macros.getName(str);
+    if(!macro) return;
+
     buttons[str] = {
-      label : str,
+      label : `
+        <div style="display:flex;flex-direction:row;justify-content:center;align-items:center;width">
+          <div style="display:flex;justify-content:left;flex-grow:1;"><img src="${macro.data.img}" width="25" height="25" style="background-color:#5c5c5c;"/></div>
+          <div style="display:flex;justify-content:left;flex-grow:4"><label>${str}</label></div>
+        </div>`,
       callback : () => {
         game.macros.getName(str).execute();
         dialog.render(true);

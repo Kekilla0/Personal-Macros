@@ -9,3 +9,14 @@ function toggleJournal({ name })
   journal.sheet.rendered ? journal.sheet.close() : journal.sheet.render(true);
   return journal;
 }
+
+/*
+  Journal Arguments?
+*/
+{
+  let args = Array.from($(event.target).parent()).reduce((a,v)=>{
+    let b = v.outerText.split(`-`);
+    b.shift();
+    return [...a, ...b]
+  }, []);
+}
