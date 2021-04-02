@@ -1,10 +1,15 @@
 /*
-  Edit for const config file
-  dialog choices more than just the contents of the store
-  finish the stores inventory
-  add in percentage markup values
-  add in race/sex of owner
-  random name generator
+  dialog choices 
+    type of store
+    size of store
+    race of storekeep
+    percentage increase of prices
+  create store inventory
+  randomly generates storekeep
+    random attributes
+    random characteristics
+    random name
+  outputs all information in a journal
 */
 
 const config = {
@@ -15,9 +20,10 @@ const config = {
   weightedArray : (arr, w, e) => { let reArr = []; arr.forEach(ele => { for(let i=0; i< ele[w]; i++) reArr.push(ele[e]); }); return reArr; },
   capitalize : (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`,
   build : true, 
-  types : [`Adventuring Supplies`,`Alchemist`,`Herbalist`,`Blacksmith`,`Armory`],
+  types : [`Adventuring Supplies`,`Alchemist`,`Herbalist`,`Blacksmith`,`Armory`,`General Store`],
   sizes : [`Small`, `Basic`,`Urban`,`Premium`],
   races : [`Random`, `Dragonborn`, `Dwarf`, `Elf`, `Gnome`, `Half-Elf`, `Half-Orc`, `Halfling`, `Human`, `Tiefling`, `Goblin`, `Orc`, `Demon`], 
+  keys : ["dnd5e.items", "dnd5e.tradegoods", "plutonium.items"],
   gold : {Small : 100, Basic : 200, Urban : 5000, Premium : 10000}, 
   items : {
     //Armor
@@ -411,13 +417,45 @@ const config = {
         { name : `Alchemist`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+2`}
       ]
     },
-    //Item
+    //Adventuring Gear
+    "Abacus" : 
+    {
+      cost : `2 gp`,
+      weight : `2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `0`, Basic : `0`, Urban : `1d4`, Premium : `1d4+2`}
+      ]
+    },
     "Backpack" : 
     {
       cost : `2 gp`,
       weight : `5 lb.`,  
       stores: [
         { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+      ]
+    },
+    "Barrel" : 
+    {
+      cost : `2 gp`,
+      weight : `70 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
+    "Basket" : 
+    {
+      cost : `4 sp`,
+      weight : `2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+2`, Urban : `1d4+4`, Premium : `1d4+5`}
+      ]
+    },
+    "Blanket" : 
+    {
+      cost : `5 sp`,
+      weight : `3 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`}
       ]
     },
     "Bedroll" : 
@@ -428,12 +466,60 @@ const config = {
         { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
-    "Map Case" : 
+    "Bell" : 
     {
       cost : `1 gp`,
-      weight : `1 lb.`,  
+      weight : `2 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+        { name : `General Store`, Small : `0`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`}
+      ]
+    },
+    "Bottle, glass" : 
+    {
+      cost : `2 sp`,
+      weight : `2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+      ]
+    },
+    "Bucket" : 
+    {
+      cost : `5 cp`,
+      weight : `2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+2`, Urban : `1d4+4`, Premium : `1d4+5`}
+      ]
+    },
+    "Candle" : 
+    {
+      cost : `4 sp`,
+      weight : `2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+2`, Urban : `1d4+4`, Premium : `1d4+5`}
+      ]
+    },
+    "Chalk" : 
+    {
+      cost : `1 cp`,
+      weight : `0 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+2`, Urban : `1d4+4`, Premium : `1d4+5`}
+      ]
+    },
+    "Chest" : 
+    {
+      cost : `5 gp`,
+      weight : `25 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `0`, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+      ]
+    },
+    "Chest" : 
+    {
+      cost : `5 gp`,
+      weight : `25 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `0`, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
       ]
     },
     "Climber's Kit" : 
@@ -442,6 +528,22 @@ const config = {
       weight : `12 lb.`,  
       stores: [
         { name : `Adventuring Supplies`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Clothes, Common" : 
+    {
+      cost : `5 sp`,
+      weight : `3 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+5`, Premium : `1d4+7`}
+      ]
+    },
+    "Clothes, Fine" : 
+    {
+      cost : `15 gp`,
+      weight : `6 lb.`,  
+      stores: [
+        { name : `General Store`, Small : `0`, Basic : `0`, Urban : `1d4`, Premium : `1d4+3`}
       ]
     },
     "Clothes, Traveler's" : 
@@ -475,7 +577,8 @@ const config = {
       stores: [
         { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`},
         { name : `Alchemist`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`},
-        { name : `Herbalist`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`}
+        { name : `Herbalist`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+2`, Urban : `1d4+4`, Premium : `1d4+6`},
       ]
     },
     "Grappling Hook" : 
@@ -491,7 +594,8 @@ const config = {
       cost : `1 gp`,
       weight : `3 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`}
+        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`},
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+3`, Premium : `1d4+5`},
       ]
     },
     "Hammock" : 
@@ -511,6 +615,14 @@ const config = {
         { name : `Herbalist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+3`}
       ]
     },
+    "Hour Glass" : 
+    {
+      cost : `25 gp`,
+      weight : `1 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `0`, Basic : `0`, Urban : `1d4`, Premium : `1d4+2`}
+      ]
+    },
     "Hunting Trap" : 
     {
       cost : `5 gp`,
@@ -519,12 +631,45 @@ const config = {
         { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
+    "Ink" : 
+    {
+      cost : `10 gp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
+    "Ink Pen" : 
+    {
+      cost : `2 cp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
+    "Jug" : 
+    {
+      cost : `2 cp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4 + 2`, Urban : `1d4+3`, Premium : `1d4+5`}
+      ]
+    },
+    "Ladder (10-foot)" : 
+    {
+      cost : `1 sp`,
+      weight : `25 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
     "Lamp" : 
     {
       cost : `5 sp`,
       weight : `1 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`},
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
       ]
     },
     "Lantern, Bullseye" : 
@@ -532,7 +677,8 @@ const config = {
       cost : `10 gp`,
       weight : `2 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+2`}
+        { name : `Adventuring Supplies`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+2`},
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+2`},
       ]
     },
     "Lantern, Hooded" : 
@@ -540,7 +686,32 @@ const config = {
       cost : `5 gp`,
       weight : `2 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`},
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+      ]
+    },
+    "Lock" : 
+    {
+      cost : `10 gp`,
+      weight : `1 lb.`, 
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+      ]
+    },
+    "Magnifying glass" : 
+    {
+      cost : `100 gp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4-1`, Premium : `1d4`}
+      ]
+    },
+    "Map Case" : 
+    {
+      cost : `1 gp`,
+      weight : `1 lb.`,  
+      stores: [
+        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
       ]
     },
     "Mess kit" : 
@@ -548,7 +719,24 @@ const config = {
       cost : `2 sp`,
       weight : `1 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
+    "Mirror, Steel" : 
+    {
+      cost : `5 gp`,
+      weight : `1/2 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Money belt" : 
+    {
+      cost : `4 gp`,
+      weight : `1 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+1`}
       ]
     },
     "Pick, Miner's" : 
@@ -556,7 +744,8 @@ const config = {
       cost : `2 gp`,
       weight : `10 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
     "Piton" : 
@@ -567,12 +756,21 @@ const config = {
         { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
-    "Pole" : 
+    "Pole (10-foot)" : 
     {
       cost : `5 cp`,
       weight : `7 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`},
+        { name : `General Store`, Small : 0, Basic : `1d41`, Urban : `1d4+1`, Premium : `1d4+3`},
+      ]
+    },
+    "Pot, iron" : 
+    {
+      cost : `2 gp`,
+      weight : `10 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
     "Potion of Healing" : 
@@ -589,7 +787,8 @@ const config = {
       cost : `5 sp`,
       weight : `1 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
       ]
     },
     "Purification Kit" : 
@@ -626,12 +825,21 @@ const config = {
         { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
       ]
     },
+    "Robes" : 
+    {
+      cost : `1 gp`,
+      weight : `4 lb.`, 
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+      ]
+    },
     "Rope, Hempen" : 
     {
       cost : `1 gp`,
       weight : `10 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`}
+        { name : `Adventuring Supplies`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`},
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+3`},
       ]
     },  
     "Rope, Silk" : 
@@ -639,7 +847,8 @@ const config = {
       cost : `10 gp`,
       weight : `5 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`}
+        { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`},
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+2`},
       ]
     },
     "Sack" : 
@@ -647,7 +856,24 @@ const config = {
       cost : `1 cp`,
       weight : `1/2 lb.`, 
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
+      ]
+    },
+    "Scale, merchant's" : 
+    {
+      cost : `5 gp`,
+      weight : `3 lb.`, 
+      stores: [
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+1`},
+      ]
+    },
+    "Sealing wax" : 
+    {
+      cost : `5 sp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : 0, Basic : 0, Urban : `1d4`, Premium : `1d4+1`},
       ]
     },
     "Shovel" : 
@@ -655,7 +881,8 @@ const config = {
       cost : `2 gp`,
       weight : `5 lb.`,  
       stores: [
-        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+        { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
+        { name : `General Store`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`},
       ]
     },
     "Signal Whistle" : 
@@ -664,6 +891,14 @@ const config = {
       weight : ``,  
       stores: [
         { name : `Adventuring Supplies`, Small : `1d4`, Basic : `1d4+1`, Urban : `1d4+3`, Premium : `1d4+5`}
+      ]
+    },
+    "Soap" : 
+    {
+      cost : `2 cp`,
+      weight : `0 lb.`, 
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+3`},
       ]
     },
     "Spyglass" : 
@@ -770,7 +1005,24 @@ const config = {
       weight : `1 lb.`,   
       stores: [
         { name : `Alchemist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+3`},
-        { name : `Herbalist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+3`}
+        { name : `Herbalist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+3`},
+        { name : `General Store`, Small : 0, Basic : `1d4`, Urban : `1d4+2`, Premium : `1d4+5`}
+      ]
+    },
+    "Paper (one sheet)" : 
+    {
+      cost : `2 sp`,
+      weight : `0 lbs`,   
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+5`, Premium : `1d4+10`}
+      ]
+    },
+    "Parchment (one sheet)" : 
+    {
+      cost : `1 sp`,
+      weight : `0 lbs`,   
+      stores: [
+        { name : `General Store`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+5`, Premium : `1d4+10`}
       ]
     },
     "Perfume (vial)" : 
@@ -799,6 +1051,22 @@ const config = {
       ]
     },
     //Tools
+    "Brewer's supplies" : 
+    {
+      cost : `20 gp`,
+      weight : `8 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Carpenter's tools" : 
+    {
+      cost : `8 gp`,
+      weight : `6 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
     "Cartographer's Tools" : 
     {
       cost : `15 gp`,
@@ -807,10 +1075,50 @@ const config = {
         { name : `Adventuring Supplies`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
       ]
     },
+    "Cobbler's tools" : 
+    {
+      cost : `1 gp`,
+      weight : `5 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Cook's utensils" : 
+    {
+      cost : `1 gp`,
+      weight : `8 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Glassblower's tools" : 
+    {
+      cost : `30 gp`,
+      weight : `5 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
+    "Mason's tools" : 
+    {
+      cost : `10 gp`,
+      weight : `8 lb.`,  
+      stores: [
+        { name : `General Store`, Small : 0, Basic : `1d4-1`, Urban : `1d4`, Premium : `1d4+1`}
+      ]
+    },
     "Navigator's Tools" : 
     {
       cost : `25 gp`,
       weight : `2 lb.`,   
+      stores: [
+        { name : `Adventuring Supplies`, Small : 0, Basic : 0, Urban : `1d4-1`, Premium : `1d4`}
+      ]
+    },
+    "Painter's supplies" : 
+    {
+      cost : `10 gp`,
+      weight : `5 lb.`,   
       stores: [
         { name : `Adventuring Supplies`, Small : 0, Basic : 0, Urban : `1d4-1`, Premium : `1d4`}
       ]
@@ -830,6 +1138,24 @@ const config = {
       stores: [
         { name : `Alchemist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+2`},
         { name : `Herbalist`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+2`}
+      ]
+    },
+    "Smith's Tools" : 
+    {
+      cost : `20 gp`,
+      weight : `8 lb.`,   
+      stores: [
+        { name : `Blacksmith`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+1`},
+        { name : `Armory`, Small : 0, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+1`}
+      ]
+    },
+    "Tinker's Tools" : 
+    {
+      cost : `50 gp`,
+      weight : `10 lb.`,   
+      stores: [
+        { name : `Blacksmith`, Small : 0, Basic : `0`, Urban : `1d4`, Premium : `1d4+1`},
+        { name : `Armory`, Small : 0, Basic : `0`, Urban : `1d4`, Premium : `1d4+1`}
       ]
     },
     //Tack, Harness
@@ -877,11 +1203,19 @@ const config = {
         { name : `Alchemist`, Small : `1d4-1`, Basic : `1d4`, Urban : `1d4+1`, Premium : `1d4+2`}
       ]
     },
+    "Special Materials" : 
+    {
+      cost : `See Material`,
+      weight : ``,  
+      stores: [
+        { name : `Blacksmith`, Small : `1d4-2`, Basic : `1d4-1`, Urban : `1d4+1`, Premium : `1d4+2`},
+        { name : `Armory`, Small : `1d4-3`, Basic : `1d4-2`, Urban : `1d4-1`, Premium : `1d4+1`}
+      ]
+    },
   },
 };
 
 (async ()=>{
-
   //input function
   let [type, size, race, percent] = await quickDialog({
     data : [
@@ -894,14 +1228,14 @@ const config = {
   });
 
   //create inventory --- fix to be a map
-  let inventory = Object.entries(config.items).reduce((acc, [key , val], ind, arr) => {
+  let inventory = Object.entries(config.items).reduce((acc, [key , val]) => {
     let avail = val.stores.find(i=>i.name === type);
     if(avail && avail[size] !== 0)
     {
       let num = new Roll(avail[size]).roll().total;
-      //fix money change here * (parseInt(percent)/100 + 1)
+      let cost = getCost(val.cost, percent);
       if(num > 0)
-        acc.push({name : key, cost : val.cost, weight : val.weight, units : num });
+        acc.push({name : key, cost , weight : val.weight, units : num });
     }
     return acc;
   }, []);
@@ -914,7 +1248,7 @@ const config = {
   */
   let rand_char = getCharacter(race);
 
-  await config.wait(5000);
+  //await config.wait(5000);
 
   let content = `
   ${
@@ -1282,4 +1616,27 @@ function toggleJournal({ name })
   let journal = game.journal.getName(name);
   journal.sheet.rendered ? journal.sheet.close() : journal.sheet.render(true);
   return journal;
+}
+
+function getCost(cost, percent)
+{
+  console.log(cost);
+  console.log(percent);
+  const moneys = ["pp", "gp", "sp", "cp"];
+
+  let arr = cost.split(" ");
+  let base = arr[1], value = parseInt(arr[0]) * (1 + (percent/100)), base_ind = moneys.indexOf(base);
+
+  return moneys.reduce((acc, val, ind)=> {
+    if(ind < base_ind || value <= 0) return acc;
+    else{
+      let whole = whole === 4 ? Math.ceil(value) : Math.floor(value);
+      value = (value - whole) * 10;
+
+      if(whole > 0)
+        return acc += `${whole} ${val} `;
+      else 
+        return acc;
+    }
+  }, "")
 }

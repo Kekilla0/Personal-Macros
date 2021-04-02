@@ -23,3 +23,15 @@ async function getAll({ key })
   let pack = game.packs.get(key);
   return await pack.getContent();
 }
+
+async function searchItem({ keys = [], name = ""}){
+  keys = keys instanceof Array ? keys : [keys];  
+
+  for(let key of keys)
+  {
+    let pack = game.packs.get(key);
+    let itemID = (await pack.getIndex()).find(i=>i.name === name)?._id;
+    if(itemID)
+      return await pack.getEntity(itemID);
+  }
+}
