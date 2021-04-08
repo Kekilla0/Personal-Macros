@@ -57,15 +57,42 @@ async function create_loot_actor(token)
       .filter(item=> !item.data.data?.price  || item.data.data.price === 0)
       .map(item => item.id)
   );
-  //change loot sheet
-  await token.actor.update({
-    "flags.core.sheetClass" : "dnd5e.LootSheet5eNPC",
-    /*[`permission.default`] : ENTITY_PERMISSIONS.OBSERVER*/
-  });
   //change overlay, change permissions, change loot sheet
   await token.update({
-    /*"actorData.permission.default" : 2,*/
     overlayEffect : `icons/svg/chest.svg`
   });
+
+  await sheetChange({ actor : token.actor });
+  await permission({ entity : token, value : 2, users : `default` });
   await token.toggleCombat();
+}
+
+async function permission({ entity, value , users }={})
+{
+  users = users instanceof Array ? users : [users];
+
+  let permission = entity.data.permission instanceof Object ? duplicate(entity.data.permission) : {};
+
+  users.forEach(id=> {
+    if(game.users.get(id) !== null || id === `default`)
+    {
+      permission[id] = value;
+    }
+  });
+
+  return await entity.update({ permission });
+}
+
+async function sheetChange({ actor }={})
+{
+  let {currency} = actor.data.data;
+  for(let [key, value] of Object.entries(currency))
+  {
+    currency[key] = { value };
+  }
+  await actor.update({
+    "data.currency" : currency,
+    "flags.core.sheetClass" : `dnd5e.LootSheet5eNPC`,
+    "flags.lootsheetnpc5e.lootsheettype" : "Loot",
+  });
 }
