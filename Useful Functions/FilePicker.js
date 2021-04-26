@@ -29,12 +29,19 @@ async function getFileByExt(source, target, extension)
   }
 }
 
-async function getFiles(source, target, extensions = ``)
+async function getFiles(target, extensions = ``, source = `user`)
 {
   extensions = extensions instanceof Array ? extensions : [extensions];
   let filePicker = await FilePicker.browse(source, target, { extensions });
   if(filePicker.files)
     return [...filePicker.files];
-  else
-    return new Error(`${source + target} does not have any files`);
+  return [];
+}
+
+async function getFolders(target, source = `user`)
+{ 
+  let filePicker = await FilePicker.browse(source, target);
+  if(filePicker.dirs)
+    return [...filePicker.dirs];
+  return [];
 }

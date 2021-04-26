@@ -1,12 +1,13 @@
-//get init type (???)
-const type = "";
-const autoRoll = true;
-const active = false;
-const die = { str : `d20`, value : `10` };
+const config = {
+    type : "",
+    autoRoll : true, 
+    active : false,
+    die : { str : `d20`, value : `10` }
+}
 
 const _Score = function(combatant){
     const actorData = combatant.actor.getRollData();
-    let formula = `${die.value} + ${actorData.attributes.init.mod} + ${actorData.attributes.init.prof} + ${actorData.attributes.init.bonus}`;
+    let formula = `${config.die.value} + ${actorData.attributes.init.mod} + ${actorData.attributes.init.prof} + ${actorData.attributes.init.bonus}`;
     
     const tiebreaker = game.settings.get("dnd5e","initiativeDexTiebreaker");
     if(tiebreaker) formula += `+ ${actorData.abilities.dex.value/100}`;
@@ -21,12 +22,12 @@ const _Side = function(combatant){
         ? combat.data.combatants.find(c=> c.actor.hasPlayerOwner && c.initiative)?.initiative 
         : combat.data.combatants.find(c=> !c.actor.hasPlayerOwner && c.initiative)?.initiative;
         
-    return formula ? `${formula}` : `1${die.str}`;
+    return formula ? `${formula}` : `1${config.die.str}`;
 }
 
 const _getInitiativeFormula = function(combatant) {
   const actor = combatant.actor;
-  if ( !actor ) return `1${die.str}`;
+  if ( !actor ) return `1${config.die.str}`;
   const init = actor.data.data.attributes.init;
 
   let nd = 1;
@@ -38,7 +39,7 @@ const _getInitiativeFormula = function(combatant) {
     mods += "kh";
   }
 
-  const parts = [`${nd}${die.str}${mods}`, init.mod, (init.prof !== 0) ? init.prof : null, (init.bonus !== 0) ? init.bonus : null];
+  const parts = [`${nd}${config.die.str}${mods}`, init.mod, (init.prof !== 0) ? init.prof : null, (init.bonus !== 0) ? init.bonus : null];
 
   // Optionally apply Dexterity tiebreaker
   const tiebreaker = game.settings.get("dnd5e", "initiativeDexTiebreaker");
@@ -50,7 +51,7 @@ const _autoRoll = function (combat,combatant){
     
     combatant.actor = getActor();
     let formula = ``;
-    switch(type)
+    switch(config.type)
     {
         case "Initiative Score" :
             formula = _Score(combatant);
@@ -70,23 +71,23 @@ const _autoRoll = function (combat,combatant){
 }
 const _Variant = function ()
 {
-    switch(type)
+    switch(config.type)
     {
         case "Initiative Score" :
-            CONFIG.Combat.initiative.formula = `${die.value} + @attributes.init.mod + @attributes.init.prof + @attributes.init.bonus`;
+            CONFIG.Combat.initiative.formula = `${config.die.value} + @attributes.init.mod + @attributes.init.prof + @attributes.init.bonus`;
             Combat.prototype._getInitiativeFormula = _Score;
             break;
         case "Side Initiative" :
-            CONFIG.Combat.initiative.formula = `1${die.str}`;
+            CONFIG.Combat.initiative.formula = `1${config.die.str}`;
             Combat.prototype._getInitiativeFormula = _Side;
             break;
     }
 
     //if(autoRoll) Hooks.on(`createCombatant`, (combat,combatant) => _autoRoll(combat,combatant));
-    if(autoRoll) Hooks.on(`preCreateCombatant`, (combat,combatant) => _autoRoll(combat,combatant));
+    if(config.autoRoll) Hooks.on(`preCreateCombatant`, (combat,combatant) => _autoRoll(combat,combatant));
 }
 
-if(game.user.isGM && active)
+if(game.user.isGM && config.active)
 {
     _Variant();
 }

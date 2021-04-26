@@ -68,7 +68,6 @@ async function editResource({ actor, name = ``, value = 1 })
 {
   if(!actor) return new Error(`Actor Undefined`);
   let { resources } = actor.data.data;
-  
   let [key, object] = Object.entries(resources).find(([key, object])=> key === name || object.label === name);
   if(!key || !object) return new Error(`Resource Undefined`);
   if(!object.value || !object.max)

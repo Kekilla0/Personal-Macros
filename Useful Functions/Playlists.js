@@ -39,3 +39,50 @@ async function playSound({ playlist, sound, playing })
   
   return await playlist.update(updateData);
 }
+
+async function importPlaylists(){
+  const extensions = [`.ogg`, `.wav`, `.mp3`];
+  const folderNames = [`music`, `audio`, `sound`];
+  const normalVolume = 0.5;
+  
+  /* Add check to see if playlist is already created, then check vs the fileList, append additional sounds to the playlist then? */
+
+  let rootFolder = await FilePicker.browse(`user`, ``);
+  if(rootFolder.dirs.length === 0) return;
+
+  for(let folder of rootFolder.dirs)
+  {
+    if(folderNames.includes(folder.toLowerCase()))
+    {
+      let folderContent  = await FilePicker.browse(`user`, folder);
+      if(folderContent .dirs.length === 0) continue;
+      for(let subFolder of folderContent .dirs)
+        await createPlaylist(subFolder, await getPlaylistFiles(subFolder))
+    }
+  }
+
+  async function getPlaylistFiles(folderName){
+    let fileList = await FilePicker.browse(`user`, folderName, {extensions});
+    let arr = [...fileList.files];
+    for(let folder  of fileList.dirs)
+      arr = [...arr, await getPlaylistFiles(folder)];
+    return arr;
+  }
+  async function createPlaylist(path, fileList){
+    let name = path.split('/').pop();
+    let sounds = fileList.map(f=> createSound(f));
+
+    let playlist = game.playlist.getName(name);
+    if(!playlist) await Playlist.create({mode : 0, name, playing : false, sounds});
+
+    sounds = [...playlist.data.sounds, ...sounds.filter(sound => !playlist.data.sounds.map(s=> s.path).includes(sound.path))];
+    await playlist.update({ sounds });
+
+    function createSound(filePath){
+      return {
+        path : filePath, name : filePath.split('/').pop().replace(/\..+$/,''),
+        playing : false, repeat : false, streaming : false, volume : normalVolume
+      }
+    }
+  }
+}
