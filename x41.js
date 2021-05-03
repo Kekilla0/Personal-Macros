@@ -12,23 +12,8 @@
   let pos_arr = fill_array(pos_num);
   let neg_arr = fill_array(neg_num);
 
-  //iterate through pos array, removing any duplicates from both pos and neg array
-  for(const roll of pos_arr){
-    const find = neg_arr.find(r => r.total === roll.total)
-    if(find){
-      remove_element(pos_arr, roll);
-      remove_element(neg_arr, find);
-    }
-  }
-
-  //combine rolls
-  let pos_roll = combine(pos_arr);
-  let neg_roll = combine(neg_arr);
-
-  console.log(pos_roll, neg_roll);
-
   //display rolls in 1 chat card
-  doubleRoll({ rolls : [pos_roll, neg_roll], title : "Zombie Roll Apocalypse Roll", flavor : ``, img : ``} )
+  doubleRoll({ rolls : [pos_arr, neg_arr], title : "Zombie Roll Apocalypse Roll", flavor : ``, img : ``} )
 })();
 
 async function quickDialog({data, title = `Quick Dialog`} = {})
@@ -80,7 +65,7 @@ async function quickDialog({data, title = `Quick Dialog`} = {})
 }
 
 function fill_array(num){
-  return Array(num).fill(0).map(e=> new Roll(`1d6`).roll());
+  return Array(num).fill(0).map(e=> new Roll(`1d6`).roll()).sort((a,b)=>a.total - b.total);
 }
 
 function remove_element(arr, ele){
@@ -110,8 +95,28 @@ function combine(arr)
 
 async function doubleRoll({ rolls , title = ``, img = ``, flavor = ``})
 {
-  let [a,b] = rolls;
-  if(!a || !b ) return;
+  let [original_a,original_b] = rolls;
+  original_a = combine(original_a);
+  original_b = combine(original_b);
+
+  await displayRoll(original_a);
+  await displayRoll(original_b);
+
+  //iterate through pos array, removing any duplicates from both pos and neg array
+  for(const roll of rolls[0]){
+    const find = rolls[1].find(r => r.total === roll.total)
+    if(find){
+      remove_element(rolls[0], roll);
+      remove_element(rolls[1], find);
+    }
+  }
+
+  let [trim_a, trim_b] = rolls;
+  trim_a = combine(trim_a);
+  trim_b = combine(trim_b);
+
+  console.log(original_a, original_b);
+  console.log(trim_a, trim_b);
 
   let template = `
     <hr>
@@ -134,20 +139,24 @@ async function doubleRoll({ rolls , title = ``, img = ``, flavor = ``})
     </div>
     <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1">
       <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 16px; text-align:center; padding: 2px 0px 2px 0px;">
-        ${a.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}
+        ${original_a.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}
       </span>
       <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 16px; text-align:center; padding: 2px 0px 2px 0px;">
-        ${b.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}
+        ${original_b.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}
       </span>
     </div>
     <div style="display:flex; flex-direction:row; flex-wrap:nowrap; justify-content:nospace; flex-grow:1; padding: 4px 0px 0px 0px">
       <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 2px 0px 2px 0px;">
-        <b>${a.total}</b>
+        <b>${trim_a.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}</b>
       </span>
       <span style="flex:1; background:rgba(0, 0, 0, 0.15);border: 1px solid #999;border-radius: 4px;box-shadow: 0 0 2px #fff inset; font-size: 18px; text-align:center; padding: 2px 0px 2px 0px;">
-        <b>${b.total}</b>
+        <b>${trim_b.dice.reduce((a,v) => a+`${v.total}/`, ``).slice(0,-1)}</b>
       </span>
     </div>`;
 
   return await ChatMessage.create({ content : template });
+}
+
+async function displayRoll(roll){
+  return await game.dice3d?.showForRoll(roll, game.user, true, game.users.map(u=> u.id !== game.user.id));
 }
