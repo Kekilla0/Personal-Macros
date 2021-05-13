@@ -22,5 +22,5 @@ Array.prototype.shuffle = function() {
 }
 
 Array.prototype.shuffleSort = function(){
-  return this.sort((a,b)=> (0.5 - Math.random()));
+  return this.sort(()=> (0.5 - Math.random()));
 }
