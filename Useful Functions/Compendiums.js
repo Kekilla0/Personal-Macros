@@ -24,19 +24,19 @@ async function getAll({ key })
   return await pack.getContent();
 }
 
-async function searchItem({ keys = [], name = ""}){
+async function findItemInCompendium({ keys = [], name = "", id = ""}){
   keys = keys instanceof Array ? keys : [keys];  
 
   for(let key of keys)
   {
     let pack = game.packs.get(key);
-    let itemID = (await pack.getIndex()).find(i=>i.name === name)?._id;
+    let itemID = id ?? (await pack.getIndex()).find(i=>i.name === name)?._id;
     if(itemID)
       return await pack.getEntity(itemID);
   }
 }
 
-async function getIndex({ keys , name = ""}){
+async function getIndex({ keys , name = "", }){
   keys = keys instanceof Array ? keys : [keys];  
 
   for(let key of keys)
@@ -55,4 +55,9 @@ async function getIndex({ keys , name = ""}){
       };
   }
   return undefined;
+}
+
+async function getEntityFromLink({ link }){
+  let [scope, key, id] = link.match(/\[(.*?)\]/g)[0].split('.');
+  return await searchItem({ keys : [`${scope}.${key}`], id });
 }
