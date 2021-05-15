@@ -32,3 +32,14 @@ async function maximizeHealth(token)
   return (token.actor.data.data.attributes.hp.value === hp.max) 
     ? token : await token.actor.update({ "data.attributes.hp" : hp });
 }
+
+/*
+  Create Tokens with a user having full permissions
+*/
+async function createToken({ actor, user, location }){
+  let tokenData = duplicate(actor.data.token);
+  setProperty(tokenData, "actorData.permission", {[user.id] : CONST.ENTITY_PERMISSIONS.OWNER})
+  tokenData.x = location.x ?? 0;
+  tokenData.y = location.y ?? 0;
+  return await canvas.tokens.createMany([tokenData]);
+}

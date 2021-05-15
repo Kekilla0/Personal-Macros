@@ -136,11 +136,10 @@ async function multiInput({title = ``, data = []} = {})
     options : [``] or ``
   }
 */
-async function quickDialog({data, title = `Quick Dialog`} = {})
-{
+async function quickDialog({data, title = `Quick Dialog`} = {}){
   data = data instanceof Array ? data : [data];
 
-  return await new Promise((resolve) => {
+  return await new Promise(async (resolve) => {
     let content = `
     <table style="width:100%">
       ${data.map(({type, label, options}, i)=> {
@@ -155,8 +154,8 @@ async function quickDialog({data, title = `Quick Dialog`} = {})
       }).join(``)}
     </table>`;
 
-    new Dialog({
-      title, content,
+    await new Dialog({
+      title, content, default : "Ok",
       buttons : {
         Ok : { label : `Ok`, callback : (html) => {
           resolve(Array(data.length).fill().map((e,i)=>{
@@ -180,6 +179,7 @@ async function quickDialog({data, title = `Quick Dialog`} = {})
           }));
         }}
       }
-    }).render(true);
+    })._render(true);
+    document.getElementById("0qd").focus();
   });
 }
