@@ -1,10 +1,9 @@
 /*
   For use with item macro 1.5.2
 */
-
 const message= (...args) => ChatMessage.create({content : args.join(``)});
 const rollData = item.getRollData();
-const attacks = Math.ceil(rollData.attr.hp.value/5);
+const attacks = 2;
 
 let rolls = Array(attacks).fill(0).map((ele, ind)=> {
   let attackRolls = Array(2).fill(0).map((ele, ind) =>
