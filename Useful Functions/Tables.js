@@ -76,3 +76,10 @@ async function createTable({ entries, name })
     };
   }
 }
+
+/*
+  0.8.X non-async Roll
+*/
+RollTable.prototype.getRandom = function(){
+  return this.getResultsForRoll(new Roll(this.data.formula).evaluate({ async  : false }).total);
+}

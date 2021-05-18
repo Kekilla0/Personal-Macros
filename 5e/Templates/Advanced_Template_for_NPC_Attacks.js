@@ -3,7 +3,7 @@
 */
 const message= (...args) => ChatMessage.create({content : args.join(``)});
 const rollData = item.getRollData();
-const attacks = 2;
+const attacks = Math.ceil(rollData.attributes.hp.value/5);
 
 let rolls = Array(attacks).fill(0).map((ele, ind)=> {
   let attackRolls = Array(2).fill(0).map((ele, ind) =>
@@ -32,11 +32,23 @@ function getHeader(){
   return `
   <div style="display:flex;text-align:left;flex-direction:row;">
     <img style="flex : 0 0 36px; margin-right:5px" src="${item.actor.img}" width="42" height="42"/>
-    <h3 style="display:flex; flex-direction:column; flex-wrap:nowrap; justify-content: flex-start; align-items:center;">${item.actor.name} - ${item.name}</h3>
+    <img style="flex : 0 0 36px; margin-right:5px" src="${item.img}" width="42" height="42"/>
+    <div style="display:flex;flex-direction:column;flex-wrap:nowrap;justify-content:flex-start;">
+      <div style="font-size:small;">${item.actor.name}</div>
+      <div style="font-size:small;">${item.name}</div>
+    </div>
   </div>
   <div style="display:flex;text-align:center;flex-direction:row;justify-content:space-evenly;width:100%;">
-    <div style="width:50%;justify-content:space-evenly;"><b>Attack Roll</b></div>
-    <div style="width:50%;justify-content:space-evenly;"><b>Damage Roll</b></div>
+    <div style="width:50%;justify-content:space-evenly;flex-direction:column;">
+      <div style="font-size:x-small;">Attack Roll</div>
+      <div style="font-size:x-small;">[1d20 + ${rollData.item.proficient ? `@prof` : ``} + @mod]</div>
+    </div>
+    <div style="width:50%;justify-content:space-evenly;flex-direction:column;">
+      <div style="font-size:x-small;">Damage Roll</div>
+      ${rollData.item.damage.parts.reduce((acc, val) => 
+          acc += `<div style="font-size:x-small;">[${val[0]} - (${val[1]})]</div>`
+        , ``)}
+    </div>
   </div>
   `;
 }
