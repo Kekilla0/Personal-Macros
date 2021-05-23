@@ -14,7 +14,6 @@ const config = {
   capitalize : (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`,
   keys : [],
   region : ["Artic", "Cold", "Cave", "Arid", "Desert", "Forest", "Lake", "River", "Ocean", "Mountain", "Plain", "Swamp"],
-  units : ["1/4", "1/2", "1", "2", "3", "4"],
   collectables : {
     "plants and herbs" : {
       "Artic" : ["Aniseed sap", "Ghostly snowdrop", "Kreet Paste", "Kreet Paste", "Spineflower berries", "White poppy", "Winter turtlehead", "Yeti's Parsley"],
@@ -76,12 +75,13 @@ const config = {
 };
 
 (async ()=> {
-  let [DC, region, units] = await quickDialog({
+  let [TIME, DC, MOD, region] = await quickDialog({
     title : `Collecting Materials`,
     data : [
-      {type : `number`, label : `DC : `, options: 10 },
+      {type : `number`, label : `Time (in hours): `, options : 1},
+      {type : `number`, label : `DC : `, options: 15 },
+      {type : `number`, label : `Modifier (adv/dis): `, options : 0},
       {type : `select`, label : `Select Region : `, options : ["Random", ...config.region]},
-      {type : `select`, label : `Select Units : `, options : ["Random", ...config.units]},
     ],
   });
 
@@ -89,23 +89,27 @@ const config = {
   if(region === "Random")
     region = config.randomArrayElement(config.region);
 
-  let content = Object.entries(config.collectables).reduce((acc, [key, val])=> {
-    let roll = config.random(20);
-    if(roll > DC)
-    {
-      acc.push(`
+  let check = new Roll(`${TIME}d20cs>${DC - MOD}`).evaluate({ async : false});
+  let content = Array(check.total).fill(0).map((val, ind) => {
+    let value = new Roll(`1d4 + 1d${MOD}`).evaluate({async : false});
+    let type = config.randomArrayElement(Object.keys(config.collectables));
+    let collect = config.randomArrayElement(config.collectables[type][region]);
+
+    if(collect === "None") return "";
+
+    return `
       <table>
         <tr>
-          <th colspan=2>${key}</th>
+          <th colspan=2>${type}</th>
         </tr>
         <tr>
-          <td>${units === "Random" ? config.randomArrayElement(config.units) : units}</td>
-          <td>${config.randomArrayElement(val[region])}</td>
+          <td><b>${value.total}</b></td>
+          <td>${collect}</td>
         </tr>
-      </table>`);
-    }
-    return acc;
-  }, []);
+      </table>`;
+  }, "").filter( e => e !== ""); 
+
+  console.log(content);
 
   config.message(`<h2>${region}</h2>`, ...content);
 })();
