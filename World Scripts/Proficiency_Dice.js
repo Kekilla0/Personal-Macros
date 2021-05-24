@@ -2,8 +2,9 @@
   World Scripter : Proficiency Dice
 */
 const config = {
-  active : false,
+  active : true,
   bonusDie : {
+    1 : `1d2`,
     2 : `1d4`,
     3 : `1d6`,
     4 : `1d8`,
@@ -19,61 +20,84 @@ if(config.active)
 
 function proficientMessage(message)
 {
-  if(message.user === game.user.id)
-  {    
+  console.log(message);
+  let updateObj = message.data;
+  if(message.isAuthor){    
     //determine if proficient
-    let profObj = proficient(message);
+    let [ profObj, actor ] = proficient(updateObj);
     if(profObj.prof === null || profObj.prof === 0) return;
-    let newProf = config.bonusDie[profObj.prof] || null;
+    let newProf = (profObj.prof/actor.data.data.attributes.prof === 2)
+        ? `${config.bonusDie[actor.data.data.attributes.prof]} + ${config.bonusDie[actor.data.data.attributes.prof]}`
+        : (config.bonusDie[profObj.prof] || null);
     if(newProf === null) return;
 
     //remake roll without proficiency & with new bonus_die
-    let roll = new Roll(JSON.parse(message.roll).formula.replace(`+ ${profObj.search}`, `${profObj.keep ? `+ ${profObj.keep}` : ``} + ${newProf}`)).roll();
+    let roll = new Roll(
+        JSON.parse(updateObj.roll).formula
+            .replace(`+ ${profObj.search}`, `${profObj.keep ? `+ ${profObj.keep}` : ``} + ${newProf}`))
+            .evaluate({ async : false });
+    
 
     //change content & roll
-    setProperty(message,"content", `${roll.total}`);
-    setProperty(message,"roll", JSON.stringify(roll));
+    if(game.data.version.split('.')[1] <= 7){
+        setProperty(updateObj,"content", `${roll.total}`);
+        setProperty(updateObj,"roll", JSON.stringify(roll));        
+    }else{
+        updateObj.update({
+            "content" : roll.total,
+            "roll" : JSON.stringify(roll)
+        });     
+    }
   }
 }
 
-function proficient(message)
-{
-  let info = message.flags.dnd5e.roll;
-  let actor = canvas.tokens.get(message.speaker.token).actor || game.actors.get(message.speaker.actor);
+function proficient(updateObj){
+  let info = updateObj.flags.dnd5e.roll;
+  let actor = canvas.tokens.get(updateObj.speaker.token).actor || game.actors.get(updateObj.speaker.actor);
+  let prof = actor.data.data.attributes.prof;
+  let data = [];
 
   if(!actor) return 0;
 
   switch(info.type)
   {
     case `ability` :
-      return {
+      data.push({
         search : null, 
         prof : null, 
         keep : null,
-      };
+      });
+      break;
     case `save` : 
       let saveData = actor.data.data.abilities[info.abilityId];
-      return {
+      data.push({
         search : saveData.prof, 
         prof : (saveData.save - saveData.mod), 
         keep : null,
-      }
+      });
+      break;
     case `skill` :
       let skillData = actor.data.data.skills[info.skillId];
-      return {
+      data.push({
         search : skillData.total, 
         prof : skillData.prof, 
         keep : skillData.mod,
-      };
+      });
+      break;
     case `attack` :
       let {proficient} = actor.items.get(info.itemId).data.data;
-      return  {
+      data.push({
         search : actor.data.data.attributes.prof, 
-        prof : proficient ? actor.data.data.attributes.prof : 0, 
+        prof : proficient ? prof : 0, 
         keep : null
-      }
+      });
+      break;
     default :
       config.fn.error(`Type not accounted for ${info.type}`);
-      return 0;
+      data.push({ prof : 0 });
+      break;
   }
+  
+  data.push(actor);
+  return data;
 }
