@@ -18,37 +18,41 @@ const config = {
 if(config.active)
   Hooks.on(`preCreateChatMessage`, proficientMessage)
 
-function proficientMessage(message)
-{
-  console.log(message);
-  let updateObj = message.data;
-  if(message.isAuthor){    
-    //determine if proficient
-    let [ profObj, actor ] = proficient(updateObj);
-    if(profObj.prof === null || profObj.prof === 0) return;
-    let newProf = (profObj.prof/actor.data.data.attributes.prof === 2)
-        ? `${config.bonusDie[actor.data.data.attributes.prof]} + ${config.bonusDie[actor.data.data.attributes.prof]}`
-        : (config.bonusDie[profObj.prof] || null);
-    if(newProf === null) return;
-
-    //remake roll without proficiency & with new bonus_die
-    let roll = new Roll(
-        JSON.parse(updateObj.roll).formula
-            .replace(`+ ${profObj.search}`, `${profObj.keep ? `+ ${profObj.keep}` : ``} + ${newProf}`))
-            .evaluate({ async : false });
+function proficientMessage(message){
+  let version = Number(game.data.version.split('.')[1]);
+  let isAuthor = version <= 7 ? message.user === game.userId : message.isAuthor;
+  let updateObj = version <= 7 ? message : message.data;
+  
+  //check if the user is the author and if the chatMessage is a roll
+  if(!isAuthor) return;
+  if(updateObj.type !== CONST.CHAT_MESSAGE_TYPES.ROLL) return;
     
+  //determine if proficient
+  let [ profObj, actorProf ] = proficient(updateObj);
+  if(profObj.prof === null || profObj.prof === 0) return;
+  let newProf = (profObj.prof/actorProf === 2)
+      ? `${config.bonusDie[actorProf]} + ${config.bonusDie[actorProf]}`
+      : (config.bonusDie[profObj.prof] || null);
+  if(newProf === null) return;
 
-    //change content & roll
-    if(game.data.version.split('.')[1] <= 7){
-        setProperty(updateObj,"content", `${roll.total}`);
-        setProperty(updateObj,"roll", JSON.stringify(roll));        
-    }else{
-        updateObj.update({
-            "content" : roll.total,
-            "roll" : JSON.stringify(roll)
-        });     
-    }
+  //remake roll without proficiency & with new bonus_die
+  let roll = new Roll(
+      JSON.parse(updateObj.roll).formula
+          .replace(`+ ${profObj.search}`, `${profObj.keep ? `+ ${profObj.keep}` : ``} + ${newProf}`))
+          .evaluate({ async : false });
+  
+
+  //change content & roll of the chat message
+  if(version <= 7){
+      setProperty(updateObj,"content", `${roll.total}`);
+      setProperty(updateObj,"roll", JSON.stringify(roll));        
+  }else{
+      updateObj.update({
+          "content" : roll.total,
+          "roll" : JSON.stringify(roll)
+      });     
   }
+
 }
 
 function proficient(updateObj){
@@ -98,6 +102,6 @@ function proficient(updateObj){
       break;
   }
   
-  data.push(actor);
+  data.push(prof);
   return data;
 }
