@@ -70,3 +70,75 @@ function average(nums)
 {
   return nums.reduce((a,b) => (a+b))/nums.length;
 }
+
+
+
+
+/*
+  Complete re-write!!!
+
+  Flow Chart
+    roll die
+    create content
+      highlight discarded rolls
+      possibly allow show roll on click?
+    display message    
+*/
+
+rollStats();
+
+function rollStats(){
+  let statArray = Array(6).fill(0).map(e=>new Roll("4d6k3").evaluate({async : false })).sort((a,b)=>{return b.total-a.total});
+  let content = getContent();
+
+  ChatMessage.create({
+    content,
+  });
+
+  function getContent(){
+    let header = getHeader();
+    let body = statArray.map(roll => getRollLine(roll)).join(``);
+    let footer = getFooter();
+
+    return `
+    <div style="display:flex;flex-direction:column;width:100%;">
+      ${header}
+      ${body}
+      ${footer}
+    <div>`;
+
+    function getHeader(){
+      return `
+      <div style="display:flex;justify-content:center;width:100%;padding:5px 5px 5px 5px;">
+        Stat Rolls
+      </div>`;
+    }
+    function getRollLine(roll){
+      let results = roll.dice.reduce((acc, val) => acc.concat(val.results), []); // sort?
+      return `
+      <div style="display:flex;flex-direction:row;justify-content:space-between;align-items:center;width:100%;padding:5px 5px 5px 5px;">
+        ${results.reduce((acc, val) => {
+          return acc + `<div style="display:flex;text-align:center;padding:1px 1px 1px 1px;${getFormatting(val)}">${val.result}</div>` 
+        }, ``)}
+        <div style="display:flex;text-align:center;background:white;padding:1px 1px 1px 1px;">
+          ${roll.total}
+        </div>
+      </div>`;
+
+      function getFormatting(result){
+        let low = result.result === 1, high = result.result === 6;
+        //${low ? `background:red;` : high ? `background:green;` : `` } 
+        return `
+          ${result.discarded ? `color:red;` : high ? `color:green;` : `color:black;`}
+          `;
+      }
+    }
+    function getFooter(){
+      return `
+      <div style="display:flex;justify-content:flex-end;width:100%;padding:1px 1px 1px 1px;">
+        ${statArray.reduce((acc, val)=> acc += val.total, 0)}
+      </div>
+      `;
+    }
+  }
+}

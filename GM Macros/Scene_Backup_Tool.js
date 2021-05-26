@@ -1,22 +1,6 @@
 /*
   Scene Backup Tool --- backs up current scene data on the current scene, easily restored.
 */
-async function buttonDialog(data)
-{
-  return await new Promise((resolve) => {
-    let buttons = {}, dialog;
-
-    data.buttons.forEach(([str, callback])=>{
-      buttons[str] = {
-        label : str,
-        callback
-      }
-    });
-  
-    dialog = new Dialog({title : data.title , content : data.content, buttons, close : () => resolve(true) }).render(true);
-  });
-}
-
 async function backup()
 {
   let data = JSON.stringify(canvas.scene);

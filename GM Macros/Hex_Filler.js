@@ -1,16 +1,30 @@
-const mouseCenter = getMousePosition();
-const PointsOfInterests = getPOI();
+captureClick(executePOI);
+ui.notifications.warn("Click Hex to begin.");
 
-createJournals();
+function executePOI(){
+  const mouseCenter = getMousePosition();
+  const PointsOfInterests = getPOI(mouseCenter);
 
-function getMousePosition() {
-  const mouse = canvas.app.renderer.plugins.interaction.mouse;
-  const mousePos = mouse.getLocalPosition(canvas.app.stage);
-  const mouseCen = canvas.grid.getCenter(mousePos.x, mousePos.y);
-  return { x : mouseCen[0], y : mouseCen[1] };
+  createJournals(PointsOfInterests);
 }
 
-function getPOI()
+function getMousePosition() {
+  const mousePos = () => canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(canvas.app.stage);
+  const centerGrid = (p) => canvas.grid.getCenter(p.x,p.y);
+  const mouseCenter = centerGrid(mousePos());
+  return { x : mouseCenter[0], y : mouseCenter[1] };
+}
+
+function captureClick(fn, remove = true)
+{
+  $(document.body).on("click", event => {
+    if(remove) $(document.body).off("click");
+    ui.notifications.notify("Click Captured");
+    fn(event);
+  });
+}
+
+function getPOI(mouseCenter)
 {
   const directions = [
     { weight : 1, text : "in the same hex", shift : [`M`]},
@@ -34,7 +48,6 @@ function getPOI()
     { weight : 1, text : "one hex southeast, one hex south", shift : [`SE`, `S`]},
   ];
   
-  //add icons
   const features = [
     { weight : 2, text : `Ruins`, icon : `icons/svg/ruins.svg`, folder : [`Random Dungeons`,`Random Castle`,`Random Monastery`,`Random Prisons`,`Random Temple`]},
     { weight : 2, text : `Caves`, icon : `icons/svg/cave.svg`, folder : [`Random Cavern`,`Random Sewers`,`Random Prisons`,`Random Mines`]},
@@ -59,123 +72,93 @@ function getPOI()
 
       let {direction, center} = getUniqueDirection();
 
-      let feature = gVal(features), major = roll === 20 ? ` - (Major)` : ``;
-      let header = `<h2>${feature} ${direction} ${major}</h2>`;
-      let body = `${getTableText(feature)}`;
+      let feature = features.weighted("weight").shuffleSort().random().text; 
+      let major = roll === 20 ? ` - (Major)` : ``;
+      let header = getHeader();
+      let body = getBody();
+      let icon = getIcon();
 
-      //sendMessage({content : `Center : ${Math.floor(center.x), Math.floor(center.y)} <br> ${feature}`});
+      return { header, body, direction, center, feature, icon };
 
-      return { header, body, direction, center, feature, icon : getIcon() };
-
-      function getUniqueDirection()
-      {
-        let direction = gVal(directions);
+      function getUniqueDirection(){
+        const direction = directions.weighted("weight").shuffleSort().random().text;
 
         if(a.find(ele=> ele.direction === direction)) return getUniqueDirection();
-        let {shift} = directions.find(ele=> ele.text === direction);
-        let center = shift.reduce((acc, val)=> getShift(acc,val), mouseCenter);
+        let { shift } = directions.find(ele=> ele.text === direction);
+        let center = shift.reduce((acc, val) => getShift(acc,val), mouseCenter);
+
+        [center.x, center.y] = canvas.grid.getCenter(center.x, center.y);
+
+        /*
+        center = canvas.grid.getCenter(center.x, center.y);
+        center = { x : center[0], y : center[1] };
+        */
 
         return {direction, center};
+
+        function getShift(centerPoint, shiftDirection)
+        {
+          const shift = { 
+            M :   { x :  0, y :  0 }, 
+            N :   { x :  0, y : -1 }, 
+            NE :  { x : -1, y :-.5 }, 
+            SE :  { x : -1, y : .5 }, 
+            S :   { x :  0, y :  1 }, 
+            SW :  { x :  1, y : .5 }, 
+            NW :  { x :  1, y :-.5 },
+          };
+          const {w,h} = canvas.grid;
+          let {x,y} = shift[shiftDirection];
+      
+          x = (x*w) + centerPoint.x;
+          y = (y*h) + centerPoint.y;
+      
+          //let center = canvas.grid.getCenter(x,y);
+      
+          return { x , y };
+        }
       }
-      function getShift(centerPoint, shiftDirection)
-      {
-        const shift = { 
-          M :   { x : 0, y : 0  }, 
-          N :   { x : 0, y : -1 }, 
-          NE :  { x :-1, y :-.5 }, 
-          SE :  { x :-1, y : .5 }, 
-          S :   { x : 0, y :  1 }, 
-          SW :  { x :  1, y : .5}, 
-          NW :  { x :  1, y :-.5}
-        };
-        const {w,h} = canvas.grid;
-        let {x,y} = shift[shiftDirection];
-    
-        x = (x*w) + centerPoint.x;
-        y = (y*h) + centerPoint.y;
-    
-        let center = canvas.grid.getCenter(x,y);
-    
-        return { x : center[0], y : center[1] };
-      }
-      function getIcon()
-      {
+      function getIcon(){
         return features.find(e=>e.text === feature).icon;
+      }
+      function getBody(){
+        let { folder } = features.find(f => f.text === feature);
+
+        if(!folder) return ``;
+        if(folder instanceof Array) folder = folder.shuffleSort().random();
+        folder = game.folders.getName(folder);
+        if(!folder) return ``;
+
+        return `        
+        <table style="border:1px solid black; border-collapse: collapse">
+          <tr>
+            <td style="border:1px solid black;" colspan=2><h3>${folder.name}</h3></td>
+          </tr>
+          ${folder.getTableText().reduce((acc, val) =>{
+            return acc += `
+              <tr>
+                <td style="border:1px solid black;">${val.name}</td>
+                <td style="border:1px solid black;">${val.text}</td>
+              </tr>`
+          }, ``)}
+        </table>`;
+      }
+      function getHeader(){
+        return `<h2>${feature} ${direction} ${major}</h2>`
       }
     })
     .filter(e=> e !== "");
 
-  function gVal(arr = [])
-  {
-    let fun_arr = [];
-
-    for(let val of arr)
-    {
-      if(val.weight !== undefined)
-      {
-        for(let i = 0; i< val.weight; i++) fun_arr.push(val.text);
-      }  
-    }
-
-    if(fun_arr.length == 0) fun_arr = arr;
-
-    fun_arr.shuffle();
-
-    return fun_arr[qRoll(`1d${fun_arr.length}-1`)];
-  }
-  function getTableText(feature= ``)
-  {
-    let { folder } = features.find(f=> f.text === feature);
-
-    if(!folder) return ``;
-    if(folder instanceof Array) folder = gVal(folder);
-
-    folder = game.folders.getName(folder);
-
-    let folders = game.folders.filter(f=>f.parent === folder.id);
-
-    if(folders.length > 0)
-    {
-      return folders
-        .map(f=> `${getHTML(f.content), f.name}`)
-        .join(`<br>`);
-    }else{
-      return `${getHTML(folder.content,folder.name)}<br>`;
-    }
-
-    function getHTML(content, name)
-    {
-      return `
-        <table style="border:1px solid black; border-collapse: collapse">
-          <tr>
-            <td style="border:1px solid black;" colspan=2><h3>${name}</h3></td>
-          </tr>
-          ${content.map(rt=>{
-            return `
-              <tr>
-                <td style="border:1px solid black;">${rt.name}</td>
-                <td style="border:1px solid black;">${getText(rt.id)}</td>
-              </tr>`
-          }).join(``)}
-        </table>
-      `;
-    }
-    function getText(table_id)
-    {
-      try {
-        return game.tables.get(table_id).roll().results[0].text;
-      }catch (error) { console.error (`${table_id} has had an error.`);}
-    }
-  }
-  function qRoll(rollString = ``)
-  {
-    return (new Roll(rollString).roll().total);
+  function qRoll(rollString = ``){
+    return (new Roll(rollString).evaluate({async : false}).total);
   }
 }
 
-async function createJournals()
-{
+async function createJournals(PointsOfInterests){
+  const wait = async (ms) => new Promise((resolve)=> setTimeout(resolve, ms));
   if(PointsOfInterests.length === 0 ) return await sendMessage({ content : `No POI Created.` });
+
+  let entries_created = [];
 
   for(let POI of PointsOfInterests)
   {
@@ -189,11 +172,16 @@ async function createJournals()
       name : `${POI.feature} ${number}`
     });
 
+    ui.notifications.warn(`Created New Journal : ${POI.feature} ${number}`);
+    await wait(200);
+
+    //add link to journal here to entries_created
+    entries_created.push(`Created ${POI.feature} @ [${Math.round(POI.center.x)},${Math.round(POI.center.y)}] :<br>@JournalEntry[${journal.id}]`);
+
     await Note.create({
       entryId : journal.id,
       fontSize : 20,
       icon : POI.icon,
-      //icon : "icons/svg/hanging-sign.svg",
       iconSize : 32,
       textAnchor : 1, 
       textColor : "#FFFFFF",
@@ -209,7 +197,13 @@ async function createJournals()
         }
       } 
     });
+
+    ui.notifications.warn(`Created New Note for ${POI.feature} ${number} : `);
+    await wait(200);
   }
+  //sendMessage with all entries created
+  sendMessage({ content : ["Macro Complete", ...entries_created].join(`<hr>`) });
+
 }
 
 async function sendMessage({ content, whisper = ChatMessage.getWhisperRecipients("GM"), speaker = ChatMessage.getSpeaker() }={})

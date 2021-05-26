@@ -1,28 +1,15 @@
 /*
   constant functions
 */
-
-
 const config = {
-  randomArrayElement : (arr) => arr[Math.floor(Math.random()* arr.length)],
-  weightedArray = (arr, w, e) => { let reArr = []; arr.forEach(ele => { for(let i=0; i< ele[w]; i++) reArr.push(ele[e]); }); return reArr; },
-  capitalize = (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`,
+  message : (...args) => ChatMessage.create({content : args.join(`<br>`)}),
+  random : (int) => Math.floor(Math.random()*int),
+  races : [`Random`, `Dragonborn`, `Dwarf`, `Elf`, `Gnome`, `Half-Elf`, `Half-Orc`, `Halfling`, `Human`, `Tiefling`, `Goblin`, `Orc`, `Demon`],
+  sex : ['Male', 'Female',],
+  wait : async (ms) => new Promise((resolve)=> setTimeout(resolve, ms)),
+  output : true,
 }
-/*
-  Races available = 
-    Dragonborn
-    Dwarf
-    Elf
-    Gnome
-    Half-Elf
-    Half-Orc
-    Halfling
-    Human
-    Tiefling
-    Goblin
-    Orc
-    Demon
-*/
+
 function getName(race = ``, sex = ``)
 {
   const raceData = [
@@ -284,31 +271,43 @@ function getName(race = ``, sex = ``)
   ];
 
   // build sex & race is necessary
-  if (!sex) sex = config.randomArrayElement([`Male`,`Female`].shuffle());
-  if (!race)
-  {
-    let weightedRaces = config.weightedArray(raceData, `weight`, `name`);
-    race = config.randomArrayElement(weightedRaces.shuffle());
+  if (!sex || sex.toLowerCase() === "random") sex = config.sex.shuffle().random();
+  if (!race || race.toLowerCase() === "random"){
+    race = raceData.weighted("weight").shuffle().random().name;
   }
 
   let data = duplicate(raceData.find(ele=> race.toLowerCase().includes(ele.name.toLowerCase())));
 
-  if(data.parent !== null)
-  {
-    let prnt = config.randomArrayElement(data.parent);
+  if(data.parent !== null){
+    let prnt = data.parent.shuffle().random();
     data.lastName = duplicate(raceData.find(ele=> ele.name === prnt).lastName);
   }
 
   let lnLength = config.random(data.lastName.length);
   lnLength = lnLength > 5 ? lnLength : 5;
 
-  if(!data) return error(`You fucked up!`);
-
-  log(data);
+  console.log(data, sex);
 
   return { 
-    firstName : config.capitalize(data.firstName[sex].map(arr=> config.randomArrayElement(arr.shuffle())).join(``)),
-    lastName : config.capitalize(data.lastName.map(arr=> config.randomArrayElement(arr.shuffle())).filter((e,i)=> i < lnLength ).join(``)),
-    race, sex
+    firstName : data.firstName[sex].map(arr=> arr.shuffle().random()).join(``).capitalize(),
+    lastName : data.lastName.map(arr=> arr.shuffle().random()).filter((e,i)=> i < lnLength ).join(``).capitalize(),
+    race, 
+    sex
   };
 }
+
+(async ()=> {
+  let [race, sex, number] = await quickDialog({
+    data : [
+      {type : 'select', label : 'Choose Race : ',  options : ["Random", ...config.races]},
+      {type : 'select', label : 'Choose Sex : ',  options : ["Random", ...config.sex]},
+      {type : 'number', label : 'Choose Number of Entries : ',  options : 1},
+    ],
+  });
+
+  if(config.output)
+    config.message(...Array(number).fill(0).map(e =>{
+      let data = getName(race, sex);
+      return `${data.firstName} ${data.lastName} - ${data.sex} ${data.race}`;
+    }));
+})(); 

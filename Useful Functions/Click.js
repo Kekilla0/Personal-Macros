@@ -63,7 +63,7 @@ function captureClick(fn, remove = true)
   $(document.body).on("click", event => {
     if(remove) $(document.body).off("click");
     fn(event);
-  })
+  });
 }
 
 

@@ -24,3 +24,16 @@ Array.prototype.shuffle = function() {
 Array.prototype.shuffleSort = function(){
   return this.sort(()=> (0.5 - Math.random()));
 }
+
+Array.prototype.random = function(){
+  return this[Math.floor(Math.random() * this.length )];
+}
+
+Array.prototype.weighted = function(key){
+  if(key == undefined) return this;
+  return this.reduce((acc, ele)=> {
+    for(let i=0; i < ele[key]; i++)
+      acc.push(ele);
+    return acc;
+  }, []);
+}

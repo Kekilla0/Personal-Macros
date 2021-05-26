@@ -1,1 +1,0 @@
-canvas.notes.visible = !canvas.notes.visible;

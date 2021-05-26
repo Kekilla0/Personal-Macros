@@ -1,5 +1,7 @@
 /*
   World Scripter : Proficiency Dice
+  
+  this breaks most automations that aren't waiting on a message
 */
 const config = {
   active : true,
@@ -95,6 +97,9 @@ function proficient(updateObj){
         prof : proficient ? prof : 0, 
         keep : null
       });
+      break;
+    case `damage` :
+      data.push({ prof : 0 });
       break;
     default :
       config.fn.error(`Type not accounted for ${info.type}`);

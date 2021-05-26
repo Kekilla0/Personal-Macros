@@ -1,4 +1,3 @@
-
 let seconds_selected = 0;
 let seconds_left = 0;
 

@@ -1,17 +1,7 @@
 /*
-  data : {
-    name : ``,
-    results : [
-      collection : ``,
-      drawn : false, 
-      img : ``,
-      range : [x, x],
-      resultId : ``,
-      text : ``,
-      type : 2, 
-      weight : 1
-    ];
-  }
+  Compendium to Table
+
+  Choose a compendium, from the given types, to create a table with all the items (links) in.
 */
 let compendium_types = ["Item"];
 
@@ -20,9 +10,7 @@ pick_compendium();
 async function pick_compendium()
 {
   let packs = game.packs.filter(p=>(game.user.isGM || !p.private) && compendium_types.includes(p.entity));
-
-  let pack_choice = await choose(packs.map(p=> { return [p.collection, p.title]}), `Choose a compendium to create a table from : `);
-
+  let pack_choice = await choose(packs.map(p=> ([p.collection, p.title])), `Choose a compendium to create a table from : `);
   let data = await create_Data(packs.find(p=> p.collection === pack_choice));
 
   RollTable.create(data);
@@ -48,22 +36,22 @@ async function choose(options = [], prompt = ``)
 
 async function create_Data(pack)
 {
-  let contents = await pack.getContent(), range = -1, type = 2, weight = 1;
+  let index = Array.from(await pack.getIndex()), range = 0, type = 2, weight = 1; //fix this
 
   return {
     name : `${pack.title} Table`,
-    formula : `d${contents.length}`,
+    formula : `d${index.length}`,
     replacement : true,
     displayRoll : true,
-    results : contents.map(content=>{
+    results : index.map(i=>{
       range++;
       return {
         collection : pack.collection,
         drawn : false,
-        img : content.img,
+        img : i.img,
         range : [range, range],
-        resultId : content.id,
-        text : content.name,
+        resultId : i._id,
+        text : i.name,
         type,
         weight
       };

@@ -1,11 +1,9 @@
-// args[0] = tokenID
-// args[1] = icon_path
-// args[2] = time
-(async() =>{
-  await canvas.tokens.get(args[0]).toggleEffect(args[1]);
+// args[0] = token Uuid
+// args[1] = effect or icon path
 
-  if(!args[2]) return;
-  game.Gametime.doIn({minutes:args[2]}, async () => {
-    await canvas.tokens.get(args[0]).toggleEffect(args[1]);
-  });
+let [uuid, effect] = args;
+
+(async() =>{
+  let token = await fromUuid(uuid);
+  if(token.constructor.name === "Token") await token.toggleEffect(effect);
 })();
