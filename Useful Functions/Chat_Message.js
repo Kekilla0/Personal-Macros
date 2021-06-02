@@ -48,17 +48,13 @@ async function doubleRoll({ rolls , title = ``, img = ``, flavor = ``})
 /*
   get last roll result
 */
-function lastRoll({ user = null}){
+function lastRoll( condition ){
   let messages = Array.from(game.messages);
-  if(user) messages = messages.filter(m=> m.data.user === user);
+  if(condition instanceof Function) message = message.filter(condition);
 
-  let data;
-  while(!data && messages.length !== 0)
-  {
-    let message = messages.pop();
+  for(let message of messages.reverse())
     if(message.isRoll)
-      data = message.roll.total;
-  }
-  
-  return data;
+      return message.roll;
+
+  return undefined;
 }

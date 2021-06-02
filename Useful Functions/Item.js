@@ -2,24 +2,19 @@
 /*
   Consume Use
 */
-async function consumeUse({ item })
-{
+async function consumeUse({ item }){
   if(!item) return false
 
   let { quantity , uses } = item.data.data;
 
-  if(uses && uses.value > 0)
-  {
+  if(uses && uses.value > 0){
     uses.value -= 1;
-    if(quantity && quantity > 0 && uses.value === 0)
-    {
+    if(quantity && quantity > 0 && uses.value === 0){
       uses.value = uses.max;
       quantity -= 1;
     }
-  }else if(quantity)
-  {
-    if(uses)
-    {
+  }else if(quantity){
+    if(uses){
       uses.value = uses.max;
     }
     quantity -= 1;
@@ -39,8 +34,7 @@ async function consumeUse({ item })
 /*
   changeDamage?
 */
-async function changeDamage({ item, str = ``, type = ``})
-{
+async function changeDamage({ item, str = ``, type = ``}){
   let {parts} = duplicate(item.data.data.damage);
   parts[0] = [str, type];
 

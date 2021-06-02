@@ -11,7 +11,7 @@ function toggleJournal({ name })
 }
 
 /*
-  Journal Arguments?
+  Journal Macro Arguments?
 */
 {
   let args = Array.from($(event.target).parent()).reduce((a,v)=>{

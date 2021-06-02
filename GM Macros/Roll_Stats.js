@@ -112,6 +112,8 @@ function rollStats(){
       <div style="display:flex;justify-content:center;width:100%;padding:5px 5px 5px 5px;">
         Stat Rolls
       </div>`;
+      //add stat roll type
+      //add table header (more or less : d# total mod)
     }
     function getRollLine(roll){
       let results = roll.dice.reduce((acc, val) => acc.concat(val.results), []); // sort?
@@ -124,13 +126,11 @@ function rollStats(){
           ${roll.total}
         </div>
       </div>`;
+      //add mod line
 
       function getFormatting(result){
         let low = result.result === 1, high = result.result === 6;
-        //${low ? `background:red;` : high ? `background:green;` : `` } 
-        return `
-          ${result.discarded ? `color:red;` : high ? `color:green;` : `color:black;`}
-          `;
+        return `${result.discarded ? `color:red;` : high ? `color:green;` : `color:black;`}`;
       }
     }
     function getFooter(){
@@ -139,6 +139,7 @@ function rollStats(){
         ${statArray.reduce((acc, val)=> acc += val.total, 0)}
       </div>
       `;
+      //add sum
     }
   }
 }

@@ -7,10 +7,8 @@
 
   reterns updated Entity
 */
-async function permission({ entity, value , users }={})
-{
+async function permission({ entity, value , users }={}){
   users = users instanceof Array ? users : [users];
-
   let permission = entity.data.permission instanceof Object ? duplicate(entity.data.permission) : {};
 
   users.forEach(id=> {
@@ -28,8 +26,7 @@ async function permission({ entity, value , users }={})
     accepts an entity and a scope
     returns all flags in that scope
 */
-function getFlags(entity, scope)
-{
+function getFlags(entity, scope){
   const scopes = SetupConfiguration.getPackageScopes();
   if(!scopes.includes(scope)) throw new Error(`Invalid scope`);
   return getProperty(entity.data.flags, scope);
@@ -38,12 +35,9 @@ function getFlags(entity, scope)
 /*
   delete duplicates
 */
-async function deleteDuplicates({ entities })
-{
+async function deleteDuplicates({ entities }){
   let iterated = [];
-
-  for(let entity of entities)
-  {
+  for(let entity of entities){
     if(iterated.includes(entity.name))
       await entity.delete();
     else

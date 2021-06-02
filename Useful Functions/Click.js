@@ -2,31 +2,30 @@
   Get Mouse Position relative to Canvas
 */
 
-function getMousePosition() {
+function getMousePosition(){
   const mouse = canvas.app.renderer.plugins.interaction.mouse;
   return mouse.getLocalPosition(canvas.app.stage);
 }
 /*
   Grid Center
 */
-function getCenterGrid(point = {})
-{
+function getCenterGrid(point = {}){
   const arr = canvas.grid.getCenter(point.x, point.y);
   return { x: arr[0], y : arr[1] };
 }
 
-function getEntity(type = ``, point = {})
-{
-  return canvas[type].placeables.filter(z=>
-    {
-      let {x,y,w,h} = z;
-      if(point.x >= x && point.x <= x+w && point.y >= y && point.y <= y+h) return true;
-    }
-  );
+//this can be fixed better
+function getEntity(type = ``, point = {}){
+  return canvas[type].placeables.filter(z=>{
+    let {x ,y , width, height} = z;
+    return point.x >= x 
+      && point.x <= x+width 
+      && point.y >= y 
+      && point.y <= y+height;
+  });
 }
 
-function getAll(point = {})
-{
+function getAll(point = {}){
   const types = [`drawings`,`lighting`,`notes`,`sounds`,`templates`, `tiles`, `tokens`, `walls`];
 
   return types.map(t => ({ type : t, arr : getEntity(t, point)})).filter(t=> t.arr.length !== 0);
@@ -65,7 +64,6 @@ function captureClick(fn, remove = true)
     fn(event);
   });
 }
-
 
 const mousePos = () => canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(canvas.app.stage);
 const centerGrid = (p) => canvas.grid.getCenter(p.x,p.y);

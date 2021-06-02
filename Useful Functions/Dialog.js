@@ -28,7 +28,7 @@ async function buttonDialog(data)
       buttons, 
       close : () => resolve(true) 
     },{
-      width : 300,
+      width : 300, height : "auto"
     });
 
     await dialog._render(true);
@@ -46,7 +46,7 @@ async function buttonDialog(data)
 */
 async function choose(options = [], prompt = ``)
 {
-  let value = await new Promise((resolve) => {
+  return new Promise((resolve) => {
 
     let dialog_options = (options[0] instanceof Array)
       ? options.map(o => `<option value="${o[0]}">${o[1]}</option>`).join(``)
@@ -63,7 +63,6 @@ async function choose(options = [], prompt = ``)
       buttons : { OK : {label : `OK`, callback : async (html) => { resolve(html.find('#choice').val()); } } }
     }).render(true);
   });
-  return value;
 }
 
 /*

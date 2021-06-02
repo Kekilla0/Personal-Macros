@@ -43,8 +43,7 @@ async function linkToken({ token })
 /*
   Apply Damage (w/ resistances, immunities, & vulnerabilities)
 */
-async function applyDamage({ actor , type, value } = {})
-{
+async function applyDamage({ actor , type, value } = {}){
   if(!actor || !type || !value) return;
   let {di,dr,dv} = actor.data.data.traits;
 
