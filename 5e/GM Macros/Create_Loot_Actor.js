@@ -21,8 +21,12 @@ for(let token of canvas.tokens.controlled){
   dnd5e Loot Sheet
 */
 async function sheetChange({ actor }={}){
-  //need to close existing sheet somehow so the next render re-renders fully
-  return actor.update({
+  let {currency} = actor.data.data;
+  for(let [key, value] of Object.entries(currency)){
+    currency[key] = { value };
+  }
+  await actor.update({
+    "data.currency" : currency,
     "flags.core.sheetClass" : `dnd5e.LootSheet5eNPC`,
     "flags.lootsheetnpc5e.lootsheettype" : "Loot",
   });
@@ -47,8 +51,8 @@ async function permissionChange({ document, value , users }={}){
 /*
   Remove Invaluables
 */
-async function removeInvaluables({ actor , condition }){
+async function removeInvaluables({ actor } = {}){
   const remove = ["spell", "feat"];
-  let items = actor.items.filter(item => remove.includes(item.data.type));
+  let items = actor.items.filter(item => remove.includes(item.data.type) || !item.data.data?.price || item.data.data?.price === 0);
   return actor.deleteEmbeddedDocuments("Item", items.map(item => item.id));
 }

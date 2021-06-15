@@ -35,11 +35,11 @@ getDocumentClass("Actor").prototype.longRest = async function({ dialog = true, c
 const orig_shortRest = getDocumentClass("Actor").prototype.shortRest;
 getDocumentClass("Actor").prototype.shortRest = async function({dialog = true, chat = true, autoHD = false, autoHDThreshold = 3}={}){
   let result = await orig_shortRest.call(this, {dialog, chat, autoHD, autoHDThreshold});
-  if(!result)
+  if(result !== undefined){
     for(let effect of this.effects){
-      console.log(effect);
       let status = effect.getFlag(`world`, `rest`) ?? "Ignore";
       if(status === "Short Rest")
         await effect.delete();
     }
+  }
 }
