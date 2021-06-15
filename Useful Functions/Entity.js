@@ -33,6 +33,18 @@ function getFlags(entity, scope){
 }
 
 /*
+  Remove Flags
+    accepts an entity and a scope
+    removes the scope from the flag variable
+*/
+function removeFlags({ entity, scope }){
+  if(!entity) return;
+  if(!entity.data.flags.hasOwnProperty(scope)) return;
+  const key = `flags.-=${scope}`;
+  return entity.update({ [key] : null });
+}
+
+/*
   delete duplicates
 */
 async function deleteDuplicates({ entities }){

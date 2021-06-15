@@ -1,54 +1,5 @@
 //Money Give/Remover
-
-(()=>{
-	let targets = game.user.targets;
-
-	let targets_content =``;
-
-	for(let target of targets)
-	{
-		targets_content += `<img src=${target.data.img} width="50" height="50">`
-	}
-
-	let dialog_content = `
-  <div class = "form-group">
-    <table style="width: 100%; text-align:center; border: 1px solid black">
-      <tr>
-        <thcolspan="2">${targets_content}</th>
-      </tr>
-      <tr>
-        <td><label for="pp">Platnium<label></td>
-        <td><input name="pp" type ="number" value="0" min="-999" max="999"></td>
-      </tr>
-      <tr>
-        <td><label for="gp">Gold    <label></td>
-        <td><input name="gp" type ="number" value="0" min="-999" max="999"></td>
-      </tr>
-      <tr>
-        <td><label for="ep">Electrum<label></td>
-        <td><input name="ep" type ="number" value="0" min="-999" max="999"></td>
-      </tr>
-      <tr>
-        <td><label for="sp">Silver  <label></td>
-        <td><input name="sp" type ="number" value="0" min="-999" max="999"></td>
-      </tr>
-      <tr>
-        <td><label for="cp">Copper  <label></td>
-        <td><input name="cp" type ="number" value="0" min="-999" max="999"></td>
-      </tr>
-    </table>
-	</div>`;
-
-	new Dialog({
-		content : dialog_content,
-		buttons : 
-		{
-			Ok : {icon : ``, label : `Change Money.`, callback : (html) => changeMoney(targets,html)}
-		}
-	}).render(true);
-})();
-
-async function changeMoney(targets,html)
+async function changeMoney(actors,html)
 {
 	let difference_money = {
 		pp : parseInt(html.find('[name=pp]')[0].value),
@@ -59,11 +10,11 @@ async function changeMoney(targets,html)
 	}
   
   //divide update_money based on # of targets
-  difference_money = divideValue(difference_money, targets.size);
+  difference_money = divideValue(difference_money, targets.length);
 
   //get rid of "extra" stuff, display all names in header
   let actor_content = ``;
-  for(let target of targets) {actor_content += `${target.actor.name}, `;}
+  for(let actor of actors) {actor_content += `${actor.name}, `;}
 
   let table_content = ``;
   for(let key in difference_money)
@@ -83,12 +34,11 @@ async function changeMoney(targets,html)
     ${table_content}
   </table>`;
 
-	for(let target of targets)
-	{
-    let original_money = duplicate(target.actor.data.data.currency);
+	for(let actor of actors){
+    let original_money = duplicate(actor.data.data.currency);
     let update_money = changeValue(original_money,difference_money);    
 
-    await target.actor.update({"data.currency" : update_money});
+    await actor.update({"data.currency" : update_money});
   }
 
   ChatMessage.create({content, speaker : ChatMessage._getSpeakerFromUser({user : game.user})})
@@ -260,4 +210,56 @@ function divideValue(Object, Value)
   Update.remainder = remainder/10;
   return Update;
 }
+
+function getTargetActors(){
+  if(game.user.targets.size > 0) return Array.from(game.user.targets).map(t => t.actor);
+  if(canvas.tokens.controlled.length > 0) return canvas.tokens.controlled.map(t => t.actor);
+  return game.users.filter(u => u.character).map(u => u.character);
+}
+
+
+
+let actors = getTargetActors();
+let content = `
+<div class = "form-group">
+  <table style="width: 100%; text-align:center; border: 1px solid black">
+    <tr>
+      <thcolspan="2">${actors.reduce((a,v) => a+=`<img src=${v.data.img} width="50" height="50"></img>`, ``)}</th>
+    </tr>
+    <tr>
+      <td><label for="pp">Platnium<label></td>
+      <td><input name="pp" type ="number" value="0" min="-999" max="999"></td>
+    </tr>
+    <tr>
+      <td><label for="gp">Gold    <label></td>
+      <td><input name="gp" type ="number" value="0" min="-999" max="999"></td>
+    </tr>
+    <tr>
+      <td><label for="ep">Electrum<label></td>
+      <td><input name="ep" type ="number" value="0" min="-999" max="999"></td>
+    </tr>
+    <tr>
+      <td><label for="sp">Silver  <label></td>
+      <td><input name="sp" type ="number" value="0" min="-999" max="999"></td>
+    </tr>
+    <tr>
+      <td><label for="cp">Copper  <label></td>
+      <td><input name="cp" type ="number" value="0" min="-999" max="999"></td>
+    </tr>
+  </table>
+</div>`;
+
+let dialog = new Dialog({
+  content,
+  buttons : 
+  {
+    Ok : {icon : ``, label : `Change Money.`, callback : (html) => changeMoney(actors,html)}
+  }
+});
+
+await dialog._render(true);
+
+
+
+
 

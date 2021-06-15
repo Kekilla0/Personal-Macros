@@ -129,3 +129,26 @@ if(config.active)
 /*
   This might require a module.
 */
+
+
+Hooks.on(`renderItemSheet`, (app, html) =>{
+  const template_types = ["cone", "circle", "rect", "ray"];
+  if(app.object.type !== "spell" && !template_types.includes(app.object.data.data.target.type)) return;
+  const add = ".spell-components";
+  //conditional modifier for type of item
+
+  //define what the value is
+  let status = app.object.getFlag(`world`,`spell-remove`) ?? "";
+  
+  html.find(add).append(`
+    <label class="checkbox">
+      <input type="checkbox" name="spell.template.removal" ${status}>
+      Remove
+    </label>
+  `);
+
+  $('input[name="spell.template.removal"]')[0].onchange = (event) => {
+    let status = event.target.checked ? "checked" : "";
+    app.object.setFlag(`world`, `spell-remove`, status);
+  }
+});
