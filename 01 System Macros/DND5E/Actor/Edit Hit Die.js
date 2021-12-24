@@ -15,7 +15,7 @@ async function editHitDie({ actor, event, name, value = 1} = {}){
   if(!item) return console.error(`No Class by the name of ${name} on ${actor.name}`);
 
   let {hitDice, hitDiceUsed, levels} = item.toObject().data;
-  if(value > 0 && hitDiceused !== levels)
+  if(value > 0 && hitDiceUsed !== levels)
     for(let i =0; i < value; i++)
       await actor.rollHitDie(hitDice, {dialog : false});
   else if(hitDiceUsed < 0)
