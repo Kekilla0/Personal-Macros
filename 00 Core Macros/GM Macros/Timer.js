@@ -82,7 +82,7 @@ async function update_dialog(){
   }
   function getButtons(){
     return {
-      Reset : { label : `Reset`, callback : () => { clearInterval(interval) buttonDialog(times); }},
+      Reset : { label : `Reset`, callback : () => { clearInterval(interval); buttonDialog(times); }},
       Restart : { label : `Restart`, callback : () => { seconds_left = seconds_selected; update_dialog(); }},
       Cancel : { label : `Cancel`, callback : () => { clearInterval(interval); }}
     };
