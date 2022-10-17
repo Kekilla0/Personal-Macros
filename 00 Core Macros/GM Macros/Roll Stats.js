@@ -25,15 +25,13 @@ let content = `
     <th style ="border-left:1px solid #000">Total</th>
     <th style ="border-left:1px solid #000">Mod</th>
   </tr>
-  ${stats.map((stat,stat_i)=> {
+  ${stats.map((stat,stat_i)=>{
     let return_value = `<tr>`;
-    return_value += Array(total_header).fill(0).map((v,i)=>
-    {
+    return_value += Array(total_header).fill(0).map((v,i)=>{
       let roll = stat.terms[0].results[i]?.result;
       let discard = stat.terms[0].results[i]?.discarded;
       let rerolled = stat.terms[0].results[i]?.rerolled;
-      if(roll)
-      {
+      if(roll){
         if(discard) return `<td style="${colorSetter(roll,1,stat.terms[0].faces)}">${roll}-d</td>`;
         if(rerolled) return `<td style="${colorSetter(roll,1,stat.terms[0].faces)}">${roll}-r</td>`;
         return `<td style="${colorSetter(roll,1,stat.terms[0].faces)}">${roll}</td>`;
@@ -54,14 +52,12 @@ let content = `
 ChatMessage.create({content});
 
 
-function colorSetter(number,low,high)
-{
+function colorSetter(number,low,high){
   if(number <= low) return `color:red`;
   if(number >= high) return `color:green`;
   return ``;
 }
 
-function average(nums)
-{
+function average(nums){
   return nums.reduce((a,b) => (a+b))/nums.length;
 }
