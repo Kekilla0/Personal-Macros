@@ -839,3 +839,5 @@ function compile(arr){
   function toObject(str){ let [key, ...arr] = str.split(`\n`).filter(s => s != ""); return `"${key}" : ${toArray(arr.join(`\n`))},`; }
   function toArray(str){ return `[${str.split(`\n`).filter(s => s != "").reduce((a,b) => a += `"${b}",`, ``)}]`; }
 }
+
+//make compile => table
